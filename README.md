@@ -24,7 +24,7 @@ node -v # should print `v20.17.0`
 npm -v # should print `10.8.2`
 ```
 After you install fnm, some of the following commands may not work. It required a terminal restart. If you get some ‘permission denied’ or stuff like that then enter this in terminal:
-	Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser```
 
 ## Install Angular CLI
 ```npm install -g @angular/cli```
