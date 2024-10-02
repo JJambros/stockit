@@ -11,7 +11,7 @@ This location is the Angular frontend.
 winget install Schniz.fnm
 
 # configure fnm environment
-fnm env --use-on-cd | Out-String | Invoke-Expression
+fnm env --use-on-cd --shell power-shell | Out-String | Invoke-Expression
 (I have found that sometimes my terminal likes to ‘forget’ node/npm. It’s super annoying but this command here makes it remember it)
 
 # download and install Node.js
