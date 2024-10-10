@@ -17,8 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from .views import my_data
+from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/data/', my_data),
+    path('api/data/', views.my_data), 
+    path('', views.index, name='index'),  
+    path('inventory/', views.inventory, name='inventory'),
+    path('main/', views.main, name='main'),
 ]

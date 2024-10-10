@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html data-bs-theme="light" lang="en">
 
 <head>
@@ -18,18 +18,22 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-custom navbar-mainbg" style="--bs-primary: #c1c3c0;--bs-primary-rgb: 193,195,192;"><a class="navbar-brand navbar-logo" href="#"><img src="assets/img/Stockit%20Small.png" width="80" height="40"></a><button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-bs-label="Toggle navigation"><i class="fa fa-star fas fa-bars text-white"></i></button><a class="navbar-brand navbar-logo" href="#"><i class="far fa-user-circle" style="font-size: 34px;"></i>Name</a>
+    <nav class="navbar navbar-expand-custom navbar-mainbg" style="--bs-primary: #c1c3c0;--bs-primary-rgb: 193,195,192;">
+        <a class="navbar-brand navbar-logo" href="#"><img src="assets/img/Stockit%20Small.png" width="80" height="40"></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-bs-label="Toggle navigation">
+            <i class="fa fa-star fas fa-bars text-white"></i>
+        </button>
+        <a class="navbar-brand navbar-logo" href="#"><i class="far fa-user-circle" style="font-size: 34px;"></i>Name</a>
         <div class="d-lg-flex justify-content-lg-end collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav ml-auto">
                 <div class="hori-selector">
                     <div class="left"></div>
                 </div>
-                <li class="nav-item"><a class="nav-link" href="javascript:void(0);"><i class="fa fa-star fas fa-tachometer-alt"></i>Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="javascript:void(0);"><i class="fa fa-star far fa-clone"></i>Inventory</a></li>
-                <li class="nav-item"><a class="nav-link" href="javascript:void(0);"><i class="far fa-calendar far fa-calendar-alt"></i>Audit</a></li>
-                <li class="nav-item"><a class="nav-link" href="javascript:void(0);"><i class="far fa-chart-bar far fa-chart-bar"></i>Orders</a></li>
-                <li class="nav-item"><a class="nav-link" href="javascript:void(0);"><i class="fa fa-pie-chart far fa-copy"></i>Analytics</a></li>
-                <li class="nav-item"><a class="nav-link" href="javascript:void(0);"><i class="fa fa-star far fa-copy"></i>Company</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'inventory' %}"><i class="fa fa-star far fa-clone"></i>Inventory</a></li>
+                <li class="nav-item"><a class="nav-link" href="#"><i class="far fa-calendar far fa-calendar-alt"></i>Audit</a></li>
+                <li class="nav-item"><a class="nav-link" href="#"><i class="far fa-chart-bar far fa-chart-bar"></i>Orders</a></li>
+                <li class="nav-item"><a class="nav-link" href="#"><i class="fa fa-pie-chart far fa-copy"></i>Analytics</a></li>
+                <li class="nav-item"><a class="nav-link" href="#"><i class="fa fa-star far fa-copy"></i>Company</a></li>
             </ul>
         </div>
     </nav>
@@ -227,7 +231,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.2/js/widgets/widget-storage.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="assets/js/Ludens---1-Index-Table-with-Search--Sort-Filters-v20-Ludens---1-Index-Table-with-Search--Sort-Filters.js"></script>
-    <script src="assets/js/Ludens---1-Index-Table-with-Search--Sort-Filters-v20-Ludens---Material-UI-Actions.js"></script>
     <script src="assets/js/Responsive-Active-Navbar-script.js"></script>
 </body>
 
