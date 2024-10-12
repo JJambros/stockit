@@ -33,7 +33,7 @@ class Customer(models.Model):
     name = models.CharField(max_length=20)
     contact_fname = models.CharField(max_length=20)
     contact_lname = models.CharField(max_length=40)
-    shipping_address = models.CharField(max_length=20)
+    shipping_address = models.CharField(max_length=50)
     customer_email = models.EmailField(max_length=40, unique=True) # Unique
     customer_phone = models.CharField(max_length=20, unique=True) # Unique
 
@@ -224,18 +224,17 @@ class Shipment(models.Model):
     def __str__(self):
         return f'Shipment {self.shipment_id} for Order {self.order}'
 
-
-# AuditTrail model to hold information for the audit trail from the db
 class AuditTrail(models.Model):
     audit_id = models.AutoField(primary_key=True)
-    change_time = models.DateTimeField(auto_now_add=True)
-    changed_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    changed_desc = models.CharField(max_length=255)
-    order = models.ForeignKey(CustomerOrder, on_delete=models.CASCADE)
-    inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE, null=True, blank=True)
+    change_time = models.DateTimeField(auto_now_add=True)  # Automatically set the time when created
+    changed_by = models.ForeignKey(User, on_delete=models.CASCADE)  # Link to the User who made the change
+    changed_desc = models.CharField(max_length=255)  # Description of the change
+    order = models.ForeignKey(CustomerOrder, on_delete=models.SET_NULL, null=True, blank=True)  # Set order to null on delete
+    inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE, null=True, blank=True)  # Link to Inventory
 
     def __str__(self):
         return f'Change by {self.changed_by} at {self.change_time} - {self.changed_desc}'
+   
     
 # WorksOn model -- needed to represent a many-to-many relationship
 class WorksOn(models.Model):
