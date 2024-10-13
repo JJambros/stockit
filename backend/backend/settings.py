@@ -52,7 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'crum.CurrentRequestUserMiddleware',
+    'crum.CurrentRequestUserMiddleware', # simplifies tracking the user responsible for changes in models
 ]
 
 ROOT_URLCONF = 'backend.urls'

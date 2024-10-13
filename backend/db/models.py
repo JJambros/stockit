@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User  # Importing the built-in User model
+from django.contrib.contenttypes.models import ContentType # Store metadata about models installed in app (refer to any model in a generic way)
+from django.contrib.contenttypes.fields import GenericForeignKey # Used to refer to any specific object of any model in app
 
 # Create your models here.
 
@@ -56,8 +58,8 @@ class Location(models.Model):
     location_id = models.AutoField(primary_key=True)
     address = models.CharField(max_length=30)
     city = models.CharField(max_length=20)
-    state = models.CharField(max_length=15)
-    postal_code = models.CharField(max_length=10)
+    state = models.CharField(max_length=2)
+    postal_code = models.CharField(max_length=5)
 
     def __str__(self):
         return f'{self.address}, {self.city}, {self.state}, {self.postal_code}'
@@ -163,7 +165,7 @@ class Supplier(models.Model):
     supplier_id = models.AutoField(primary_key=True)
     supplier_name = models.CharField(max_length=50)
     contact_email = models.EmailField(max_length=50)
-    contact_phone = models.CharField(max_length=10)
+    contact_phone = models.CharField(max_length=20)
 
     def __str__(self):
         return self.supplier_name
@@ -224,16 +226,20 @@ class Shipment(models.Model):
     def __str__(self):
         return f'Shipment {self.shipment_id} for Order {self.order}'
 
+
 class AuditTrail(models.Model):
     audit_id = models.AutoField(primary_key=True)
-    change_time = models.DateTimeField(auto_now_add=True)  # Automatically set the time when created
-    changed_by = models.ForeignKey(User, on_delete=models.CASCADE)  # Link to the User who made the change
-    changed_desc = models.CharField(max_length=255)  # Description of the change
-    order = models.ForeignKey(CustomerOrder, on_delete=models.SET_NULL, null=True, blank=True)  # Set order to null on delete
-    inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE, null=True, blank=True)  # Link to Inventory
+    change_time = models.DateTimeField(auto_now_add=True)
+    changed_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    changed_desc = models.CharField(max_length=255)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True)  # Track the model type
+    object_id = models.PositiveIntegerField(null=True, blank=True)  # ID of the specific object
+    content_object = GenericForeignKey('content_type', 'object_id')  # Link to any model
 
     def __str__(self):
         return f'Change by {self.changed_by} at {self.change_time} - {self.changed_desc}'
+
    
     
 # WorksOn model -- needed to represent a many-to-many relationship

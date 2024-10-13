@@ -4,12 +4,16 @@ from .models import Profile, Inventory, Customer, Dashboard, Location, Inventory
     UserDashSettings, OrderStatus, ReorderThreshold, Supplier, PurchaseOrder, Notifications, \
     CustomerOrder, OrderItem, Shipment, AuditTrail, WorksOn  # Import your model
 
+
+# Ensurees everytime a customer order is saved an audit trail is created
 class CustomerOrderAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.save()
         # Pass user to the signal when saving the model
         create_audit_trail_on_save(sender=CustomerOrder, instance=obj, created=not change, user=request.user)
 
+
+# Ensures that AuditTrail entries are deleted before the CustomerOrder is deleted
 class CustomerOrderAdmin(admin.ModelAdmin):
     def delete_model(self, request, obj):
         # Delete related AuditTrail entries first
