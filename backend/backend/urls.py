@@ -19,7 +19,8 @@ from django.urls import path, include
 from .views import my_data
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/data/', my_data),
+    path('admin/', admin.site.urls), # Admin panel
+    path('api/data/', my_data), # Example data view if needed for testing
     path('db/', include('db.urls')),  # Include the db app's URLs
+    path('api/', include('db.urls')), # API endpoints, all API-related URLs are routed here
 ]
