@@ -240,7 +240,6 @@ class AuditTrail(models.Model):
     def __str__(self):
         return f'Change by {self.changed_by} at {self.change_time} - {self.changed_desc}'
 
-   
     
 # WorksOn model -- needed to represent a many-to-many relationship
 class WorksOn(models.Model):
