@@ -67,14 +67,28 @@ class Location(models.Model):
 # InventoryHistory model to store information about the inventory's history
 class InventoryHistory(models.Model):
     history_id = models.AutoField(primary_key=True)
-    date = models.DateField()
-    sold_quantity = models.IntegerField()
-    restock_quantity = models.IntegerField()
-    remaining_quantity = models.IntegerField()
-    inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Foreign key to Inventory
+    transaction_date = models.DateTimeField(auto_now_add=True)  # Captures the exact time of the transaction
+    
+    TRANSACTION_TYPES = (
+        ('sale', 'Sale'),
+        ('restock', 'Restock'),
+        ('return', 'Return'),
+        ('adjustment', 'Adjustment'),
+    )
+    
+    transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)  # Includes Sale, Restock, Return, Adjustment
+    
+    quantity = models.IntegerField()  # How much was sold or restocked (negative for returns)
+    
+    remaining_quantity = models.IntegerField()  # Updated inventory level after the transaction
+    
+    inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
+
+    source = models.CharField(max_length=100, blank=True, null=True)  # Source of transaction (e.g., order ID, shipment ID)
 
     def __str__(self):
-        return f'Inventory History {self.history_id} for {self.inventory}'
+        return f'{self.transaction_type} of {self.quantity} units on {self.transaction_date}'
+
     
 # ForecastingPreferences model to store information about the user's forecasting preferences
 class ForecastingPreferences(models.Model):
