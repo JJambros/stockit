@@ -44,16 +44,25 @@ def track_changes_on_delete(sender, instance, **kwargs):
 def decrease_inventory_on_order(sender, instance, created, **kwargs):
     if created:  # Only decrease if a new OrderItem is created
         inventory_item = instance.inventory
-        inventory_item.quantity -= instance.quantity
-        inventory_item.save()
+        
+        # Decrease the quantity only once
+        if not hasattr(inventory_item, '_quantity_updated'):
+            inventory_item.quantity -= instance.quantity
+            inventory_item.save(update_fields=['quantity'])
+            inventory_item._quantity_updated = True  # Mark as updated to prevent multiple saves
+
 
 # Increase inventory quantity when a PurchaseOrder is created
 @receiver(post_save, sender=PurchaseOrder)
 def increase_inventory_on_purchase(sender, instance, created, **kwargs):
     if created:  # Only increase if a new PurchaseOrder is created
         inventory_item = instance.inventory
-        inventory_item.quantity += instance.order_quantity
-        inventory_item.save()
+        
+        # Increase the quantity only once
+        if not hasattr(inventory_item, '_quantity_updated'):
+            inventory_item.quantity += instance.order_quantity
+            inventory_item.save(update_fields=['quantity'])
+            inventory_item._quantity_updated = True  # Mark as updated to prevent multiple saves
 
 
 # --------- SIGNAL FOR INVENTORY_HISTORY --------- #
@@ -73,15 +82,11 @@ def update_inventory_history_on_order(sender, instance, created, **kwargs):
             remaining_quantity=inventory.quantity - sold_quantity
         )
 
-        # Update the actual inventory quantity
-        inventory.quantity -= sold_quantity
-        inventory.save()
-
 @receiver(post_save, sender=PurchaseOrder)
 def update_inventory_history_on_restock(sender, instance, created, **kwargs):
     if created:
         inventory = instance.inventory
-        restock_quantity = instance.quantity  # Quantity restocked in this purchase order
+        restock_quantity = instance.order_quantity  # Quantity restocked in this purchase order
 
         # Create a new entry in InventoryHistory for the restock
         InventoryHistory.objects.create(
@@ -90,7 +95,3 @@ def update_inventory_history_on_restock(sender, instance, created, **kwargs):
             quantity=restock_quantity,
             remaining_quantity=inventory.quantity + restock_quantity
         )
-
-        # Update the actual inventory quantity
-        inventory.quantity += restock_quantity
-        inventory.save()
