@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta        # Added for forecasting
-from django.db.models import Avg                # Added for forecasting
+from django.db.models import Avg, Sum                # Added for forecasting
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status 
@@ -136,7 +136,6 @@ def dashboard_detail(request, pk):
     
 # --------- INVENTORY FORECAST VIEWS --------- #
 
-@api_view(['GET'])
 def inventory_forecast(request, inventory_id, forecast_date):
     try:
         inventory = Inventory.objects.get(id=inventory_id)
@@ -149,7 +148,7 @@ def inventory_forecast(request, inventory_id, forecast_date):
     except ValueError:
         return Response({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=400)
 
-    # Fetch historical data for this inventory item (e.g., past 3 months)
+    # Fetch historical sales data (past 3 months)
     three_months_ago = datetime.now().date() - timedelta(days=90)
     sales_history = InventoryHistory.objects.filter(
         inventory=inventory, 
@@ -166,11 +165,31 @@ def inventory_forecast(request, inventory_id, forecast_date):
     # Calculate the number of days between today and the forecast date
     days_into_future = (forecast_date - datetime.now().date()).days
 
-    # Forecast remaining inventory
+    # Forecasted sales and quantity used
     forecasted_sales = avg_daily_sales * days_into_future
     forecasted_remaining_quantity = inventory.quantity - forecasted_sales
 
+    # Calculate profit as (price - cost) * forecasted quantity sold
+    forecasted_profit = (inventory.price - inventory.cost) * forecasted_sales
+    forecasted_expenses = forecasted_sales * inventory.cost
+
+    # Calculate the estimated number of orders based on historical order data
+    avg_daily_orders = sales_history.count() / 90  # Orders per day, based on the last 3 months
+    forecasted_orders = avg_daily_orders * days_into_future
+
+    # Check if inventory falls below zero and calculate the restocking need
+    restock_message = None
+    if forecasted_remaining_quantity < 0:
+        restock_amount = abs(forecasted_remaining_quantity)  # How much to restock
+        restock_message = f"Insufficient quantity. You will need to restock at least {restock_amount} units."
+
+    # Return the forecast results
     return Response({
         'forecast_date': forecast_date,
-        'forecasted_remaining_quantity': forecasted_remaining_quantity
+        'forecasted_profit': forecasted_profit,
+        'forecasted_expenses': forecasted_expenses,
+        'forecasted_quantity_used': forecasted_sales,
+        'forecasted_remaining_quantity': forecasted_remaining_quantity,
+        'forecasted_orders': forecasted_orders,
+        'restock_message': restock_message
     })
