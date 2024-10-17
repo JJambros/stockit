@@ -15,4 +15,7 @@ urlpatterns = [
     # Dashboard URLs
     path('dashboard/', views.dashboard_list, name='dashboard-list'),  # List and create dashboard entries
     path('dashboard/<int:pk>/', views.dashboard_detail, name='dashboard-detail'),  # Get, update, delete dashboard entry
+
+    # Inventory Forecasting URLs
+    path('inventory/forecast/<int:inventory_id>/<str:forecast_date>/', views.inventory_forecast, name='inventory-forecast'),
 ]

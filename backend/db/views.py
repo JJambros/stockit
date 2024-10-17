@@ -1,8 +1,10 @@
+from datetime import datetime, timedelta        # Added for forecasting
+from django.db.models import Avg                # Added for forecasting
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status 
 from django.contrib.auth.models import User  # Built-in User model for auth
-from .models import Profile, Inventory, Dashboard
+from .models import Profile, Inventory, Dashboard, InventoryHistory
 from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer
 
 # Example of data view used for testing
@@ -130,3 +132,45 @@ def dashboard_detail(request, pk):
         # Delete the dashboard entry
         dashboard.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    
+# --------- INVENTORY FORECAST VIEWS --------- #
+
+@api_view(['GET'])
+def inventory_forecast(request, inventory_id, forecast_date):
+    try:
+        inventory = Inventory.objects.get(id=inventory_id)
+    except Inventory.DoesNotExist:
+        return Response({'error': 'Inventory not found'}, status=404)
+
+    # Convert the input forecast_date to a date object
+    try:
+        forecast_date = datetime.strptime(forecast_date, '%Y-%m-%d').date()
+    except ValueError:
+        return Response({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=400)
+
+    # Fetch historical data for this inventory item (e.g., past 3 months)
+    three_months_ago = datetime.now().date() - timedelta(days=90)
+    sales_history = InventoryHistory.objects.filter(
+        inventory=inventory, 
+        transaction_type='sale', 
+        transaction_date__gte=three_months_ago
+    )
+
+    if not sales_history.exists():
+        return Response({'error': 'Not enough historical data for forecasting'}, status=400)
+
+    # Calculate the average daily sales
+    avg_daily_sales = sales_history.aggregate(Avg('quantity'))['quantity__avg']
+
+    # Calculate the number of days between today and the forecast date
+    days_into_future = (forecast_date - datetime.now().date()).days
+
+    # Forecast remaining inventory
+    forecasted_sales = avg_daily_sales * days_into_future
+    forecasted_remaining_quantity = inventory.quantity - forecasted_sales
+
+    return Response({
+        'forecast_date': forecast_date,
+        'forecasted_remaining_quantity': forecasted_remaining_quantity
+    })
