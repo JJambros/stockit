@@ -15,10 +15,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from .views import my_data
+from . import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/data/', my_data),
+    path('admin/', admin.site.urls), # Admin panel
+    path('api/data/', my_data), # Example data view if needed for testing
+    path('db/', include('db.urls')),  # Include the db app's URLs
+    path('api/', include('db.urls')), # API endpoints, all API-related URLs are routed here
 ]
