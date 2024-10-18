@@ -5,6 +5,10 @@ urlpatterns = [
     # Example view (keeping in case we need it for testing)
     path('data/', views.my_data, name='db-data'),
 
+    # Authentication URLs
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+
     # Profile URL (viewing/updating the logged-in user's profile)
     path('profile/', views.profile_detail, name='profile-detail'),
 
