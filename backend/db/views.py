@@ -1,6 +1,9 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
-from rest_framework import status 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework import status
+from rest_framework.authtoken.models import Token 
+from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
 from .models import Profile, Inventory, Dashboard
 from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer
@@ -12,6 +15,28 @@ def my_data(request):
         'message': 'Hello from the db app!'
     }
     return Response(data)
+
+
+# --------- AUTHENTICATION VIEWS --------- #
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_view(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    user = authenticate(username=username, password=password)
+
+    if user is not None:
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({'token': token.key, 'user_id': user.id}, status=status.HTTP_200_OK)
+    return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['POST'])
+def logout_view(request):
+    request.user.auth_token.delete()
+    return Response({'success': 'Logged out'}, status=status.HTTP_200_OK)
+
+
 
 
 # --------- PROFILE VIEWS (For managing user profiles) --------- #
