@@ -23,7 +23,8 @@ export const routes: Routes = [
           { path: 'dashboard', component: DashboardComponent },
           { path: 'inventory', component: InventoryComponent },
           { path: 'profile', component: ProfileComponent },
-          {path : 'audit', component: AuditComponent}
+          {path : 'audit', component: AuditComponent},
+          {path: 'profile', component: ProfileComponent}
         ]
       },
       { path: '**', redirectTo: 'login' }  // Redirect to login if unknown route
