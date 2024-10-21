@@ -1,0 +1,37 @@
+<link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+<link rel="stylesheet" href="assets/css/Ludens-Users---3-Profile.css">
+<link rel="stylesheet" href="assets/css/Navbar-Right-Links-icons.css">
+<link rel="stylesheet" href="assets/css/Pretty-Search-Form-.css">
+<link rel="stylesheet" href="assets/css/Table-with-search-table.css">
+<link rel="stylesheet" href="assets/css/Table-with-search.css">
+
+
+  <section>
+    <form class="search-form" style="padding-top: 32px;padding-left: 97px;padding-right: 96px;">
+        <div class="input-group"><span class="input-group-text"><i class="fa fa-search"></i></span><input class="form-control" type="text" placeholder="I am looking for.."><button class="btn btn-light" type="button">Search </button></div>
+    </form>
+    <div class="table-responsive" style="padding-left: 101px;padding-right: 101px;padding-top: 9px;padding-bottom: 0px;margin-bottom: -1px;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Inventory Name</th>
+                    <th>Amount</th>
+                    <th>Employee Name</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let trail of auditTrails">
+                    <td>{{trail.name}}</td>
+                    <td>{{trail.quantity}}</td>
+                    <td>{{trail.changed_by}}</td>
+                    <td>{{trail.change_time}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+    <script src="assets/js/Table-with-search-table.js"></script>
+
+  </section>

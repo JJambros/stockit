@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { MyDataService } from '../my-data.service';
 
 @Component({
   selector: 'app-profile',
@@ -8,5 +9,13 @@ import { Component } from '@angular/core';
   styleUrl: './profile.component.css'
 })
 export class ProfileComponent {
+  profile: any = {};
+  constructor(private myDataService: MyDataService){}
 
+  ngOnInit(): void {
+    this.myDataService.getData().subscribe(
+      (data) => (this.profile = data),
+      (error) => console.error('error fetching data', error)
+    );
+  }
 }
