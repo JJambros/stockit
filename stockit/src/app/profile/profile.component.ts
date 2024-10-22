@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { MyDataService } from '../my-data.service';
 
 @Component({
@@ -8,7 +8,7 @@ import { MyDataService } from '../my-data.service';
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css'
 })
-export class ProfileComponent {
+export class ProfileComponent implements OnInit {
   profile: any = {};
   constructor(private myDataService: MyDataService){}
 
