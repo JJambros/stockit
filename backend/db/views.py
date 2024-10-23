@@ -45,6 +45,7 @@ def logout_view(request):
 @api_view(['GET', 'PUT'])
 def profile_detail(request):
     user = request.user  # Get the currently logged-in user
+    print(f"Logged in user: {user}")  # Add this to check the user
     try:
         profile = Profile.objects.get(user=user)
     except Profile.DoesNotExist:
