@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class MyDataService {
   private apiUrl = 'http://localhost:8000/api/data/';  // Django API URL
+  private profileUrl = 'http://localhost:8000/api/profile/';
 
   constructor(private http: HttpClient) { }
 
@@ -14,4 +15,7 @@ export class MyDataService {
     return this.http.get(this.apiUrl);
   } */
 
+    getUserProfile(): Observable<any> {
+      return this.http.get(this.profileUrl);
+    }
 }
