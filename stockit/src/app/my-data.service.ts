@@ -11,9 +11,9 @@ export class MyDataService {
 
   constructor(private http: HttpClient) { }
 
-/*   getData(): Observable<any> {
-    return this.http.get(this.apiUrl);
-  } */
+    getData(): Observable<any> {
+      return this.http.get(this.apiUrl);
+    } 
 
     getUserProfile(): Observable<any> {
       return this.http.get(this.profileUrl);
