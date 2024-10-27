@@ -1,8 +1,9 @@
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from crum import get_current_user  # Import from crum to get the current user context
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from .models import AuditTrail, OrderItem, PurchaseOrder, Inventory, InventoryHistory
+from .models import AuditTrail, OrderItem, PurchaseOrder, Inventory, InventoryHistory, Profile
 
 
 # --------- SIGNAL FOR AUDIT TRAIL --------- #
@@ -102,4 +103,27 @@ def update_inventory_history_on_restock(sender, instance, created, **kwargs):
             transaction_type='restock',
             quantity=restock_quantity,
             remaining_quantity=inventory.quantity + restock_quantity
+        )
+
+
+# --------- SIGNAL FOR PROFILE --------- #
+
+# Should create a profile automatically when a user is created.
+@receiver(post_save, sender=User)
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    if created:
+        # Create a new profile if the user is created
+        Profile.objects.create(
+            user=instance,
+            Fname=instance.first_name if instance.first_name else "FirstName",
+            Lname=instance.last_name if instance.last_name else "LastName",
+            email=instance.email if instance.email else f"{instance.username}@example.com", # Fill in just for a profile creation, can be changed manually
+            phone_number="0000000000" # Fill in just for a profile creation, can be changed manually
+        )
+    else:
+        # Update the profile if the user is updated
+        Profile.objects.filter(user=instance).update(
+            Fname=instance.first_name,
+            Lname=instance.last_name,
+            email=instance.email
         )
