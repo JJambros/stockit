@@ -1,8 +1,9 @@
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from crum import get_current_user  # Import from crum to get the current user context
 from django.contrib.contenttypes.models import ContentType
-from .models import AuditTrail, OrderItem, PurchaseOrder, Inventory,  InventoryHistory
+from .models import AuditTrail, OrderItem, PurchaseOrder, Inventory, InventoryHistory
+
 
 # --------- SIGNAL FOR AUDIT TRAIL --------- #
 
@@ -29,20 +30,27 @@ def create_audit_trail(instance, action, user):
 @receiver(post_save)
 def track_changes_on_save(sender, instance, created, **kwargs):
     user = get_current_user()  # Use crum to get the current user context
-    action = "Created" if created else "Updated"
+    if hasattr(instance, 'is_deleted') and instance.is_deleted:
+        action = "Soft Deleted"
+    else:
+        action = "Created" if created else "Updated"
     create_audit_trail(instance, action, user)
 
-@receiver(post_delete)
-def track_changes_on_delete(sender, instance, **kwargs):
-    user = get_current_user()  # Use crum to get the current user context
-    create_audit_trail(instance, "Deleted", user)
+@receiver(pre_delete)
+def track_changes_on_soft_delete(sender, instance, **kwargs):
+    if hasattr(instance, 'is_deleted') and not instance.is_deleted:
+        user = get_current_user()  # Use crum to get the current user context
+        instance.is_deleted = True  # Soft delete the item
+        instance.save()
+        create_audit_trail(instance, "Soft Deleted", user)
+
 
 # --------- SIGNAL FOR INVENTORY ADJUSTING --------- #
 
 # Decrease inventory quantity when an OrderItem is created
 @receiver(post_save, sender=OrderItem)
 def decrease_inventory_on_order(sender, instance, created, **kwargs):
-    if created:  # Only decrease if a new OrderItem is created
+    if created and not instance.inventory.is_deleted:  # Only decrease if a new OrderItem is created and not soft-deleted
         inventory_item = instance.inventory
         
         # Decrease the quantity only once
@@ -55,7 +63,7 @@ def decrease_inventory_on_order(sender, instance, created, **kwargs):
 # Increase inventory quantity when a PurchaseOrder is created
 @receiver(post_save, sender=PurchaseOrder)
 def increase_inventory_on_purchase(sender, instance, created, **kwargs):
-    if created:  # Only increase if a new PurchaseOrder is created
+    if created and not instance.inventory.is_deleted:  # Only increase if a new PurchaseOrder is created and not soft-deleted
         inventory_item = instance.inventory
         
         # Increase the quantity only once
@@ -70,7 +78,7 @@ def increase_inventory_on_purchase(sender, instance, created, **kwargs):
 # Update inventory history when orders are sold
 @receiver(post_save, sender=OrderItem)
 def update_inventory_history_on_order(sender, instance, created, **kwargs):
-    if created:
+    if created and not instance.inventory.is_deleted:  # Only update if the inventory is not soft-deleted
         inventory = instance.inventory
         sold_quantity = instance.quantity  # Quantity sold in this order item
         
@@ -84,7 +92,7 @@ def update_inventory_history_on_order(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=PurchaseOrder)
 def update_inventory_history_on_restock(sender, instance, created, **kwargs):
-    if created:
+    if created and not instance.inventory.is_deleted:  # Only update if the inventory is not soft-deleted
         inventory = instance.inventory
         restock_quantity = instance.order_quantity  # Quantity restocked in this purchase order
 

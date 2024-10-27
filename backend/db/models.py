@@ -14,6 +14,7 @@ class Profile(models.Model):
     Lname = models.CharField(max_length=15) 
     email = models.EmailField(max_length=50, unique=True)  # Unique
     phone_number = models.CharField(max_length=20, unique=True)  # Unique
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'{self.Fname} {self.Lname}'
@@ -26,6 +27,7 @@ class Inventory(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.IntegerField()
     forecast_level = models.IntegerField()
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return self.name
@@ -39,6 +41,7 @@ class Customer(models.Model):
     shipping_address = models.CharField(max_length=50)
     customer_email = models.EmailField(max_length=40, unique=True) # Unique
     customer_phone = models.CharField(max_length=20, unique=True) # Unique
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return self.name
@@ -50,6 +53,7 @@ class Dashboard(models.Model):
     key_metrics = models.CharField(max_length=20)
     last_updated = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Link to the built-in User model
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return self.dashboard_type
@@ -61,6 +65,7 @@ class Location(models.Model):
     city = models.CharField(max_length=20)
     state = models.CharField(max_length=2)
     postal_code = models.CharField(max_length=5)
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'{self.address}, {self.city}, {self.state}, {self.postal_code}'
@@ -78,15 +83,11 @@ class InventoryHistory(models.Model):
     )
     
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)  # Includes Sale, Restock, Return, Adjustment
-    
     quantity = models.IntegerField()  # How much was sold or restocked (negative for returns)
-    
     remaining_quantity = models.IntegerField()  # Updated inventory level after the transaction
-    
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
-
     source = models.CharField(max_length=100, blank=True, null=True)  # Source of transaction (e.g., order ID, shipment ID)
-
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
     
     def __str__(self):
         return f'{self.transaction_type} of {self.quantity} units on {self.transaction_date}'
@@ -99,6 +100,7 @@ class ForecastingPreferences(models.Model):
     desired_safety_stock = models.IntegerField()
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Link to User
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'Forecasting Preferences {self.forecast_time_range} for {self.inventory}'
@@ -109,6 +111,7 @@ class ForecastResults(models.Model):
     forecast_date = models.DateField()
     forecast_quantity = models.IntegerField()
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'Forecast Result {self.forecast_id} for {self.inventory}'
@@ -120,6 +123,7 @@ class DashboardReports(models.Model):
     generated_at = models.DateTimeField(auto_now_add=True)
     content = models.TextField()
     dashboard = models.ForeignKey(Dashboard, on_delete=models.CASCADE)  # Link to Dashboard
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'Report {self.report_id} for {self.dashboard}'
@@ -131,6 +135,7 @@ class DashboardVisuals(models.Model):
     data_source = models.CharField(max_length=50)
     date_range = models.CharField(max_length=50)
     dashboard = models.ForeignKey(Dashboard, on_delete=models.CASCADE)  # Link to Dashboard
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'Visual {self.visual_id} for {self.dashboard}'
@@ -142,6 +147,7 @@ class ReportDateRange(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     dashboard = models.ForeignKey(Dashboard, on_delete=models.CASCADE)  # Link to Dashboard
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'Report Date Range {self.date_range_id} for {self.dashboard}'
@@ -153,6 +159,7 @@ class UserDashSettings(models.Model):
     default_report_type = models.CharField(max_length=50)
     default_date_range = models.CharField(max_length=50)
     dashboard = models.ForeignKey(Dashboard, on_delete=models.CASCADE)  # Link to Dashboard
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'Settings {self.setting_id} for {self.dashboard}'
@@ -161,6 +168,7 @@ class UserDashSettings(models.Model):
 class OrderStatus(models.Model):
     status_id = models.AutoField(primary_key=True)
     current_status = models.IntegerField()
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'Status {self.status_id}'
@@ -172,6 +180,7 @@ class ReorderThreshold(models.Model):
     reorder_quantity = models.IntegerField()
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Link to User
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'Reorder Threshold {self.threshold_id} for {self.inventory}'
@@ -182,6 +191,7 @@ class Supplier(models.Model):
     supplier_name = models.CharField(max_length=50)
     contact_email = models.EmailField(max_length=50)
     contact_phone = models.CharField(max_length=20)
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return self.supplier_name
@@ -193,6 +203,7 @@ class PurchaseOrder(models.Model):
     po_date = models.DateField()
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)  # Link to Supplier
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'Purchase Order {self.po_id} from {self.supplier}'
@@ -202,6 +213,7 @@ class Notifications(models.Model):
     notification_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Link to User
     message = models.TextField()
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'Notification {self.notification_id} for {self.user}'
@@ -216,6 +228,7 @@ class CustomerOrder(models.Model):
     status = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Add this line to link to the user
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'Customer Order {self.order_id} from {self.from_company} to {self.to_company}'
@@ -226,6 +239,7 @@ class OrderItem(models.Model):
     quantity = models.IntegerField()
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
     order = models.ForeignKey(CustomerOrder, on_delete=models.CASCADE)  # Link to CustomerOrder
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'Order Item {self.order_item_id} for Order {self.order}'
@@ -238,6 +252,7 @@ class Shipment(models.Model):
     shipped_date = models.DateField()
     est_delivery_date = models.DateField()
     order = models.ForeignKey(CustomerOrder, on_delete=models.CASCADE)  # Link to CustomerOrder
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'Shipment {self.shipment_id} for Order {self.order}'
@@ -252,6 +267,7 @@ class AuditTrail(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True)  # Track the model type
     object_id = models.PositiveIntegerField(null=True, blank=True)  # ID of the specific object
     content_object = GenericForeignKey('content_type', 'object_id')  # Link to any model
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'Change by {self.changed_by} at {self.change_time} - {self.changed_desc}'
@@ -262,6 +278,7 @@ class WorksOn(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Link to User
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
     order = models.ForeignKey(CustomerOrder, on_delete=models.CASCADE)  # Link to CustomerOrder
-
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
+    
     class Meta:
         unique_together = (('user', 'inventory', 'order'),)  # Ensures unique combination of these fields
