@@ -7,8 +7,8 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
-from .models import Profile, Inventory, Dashboard, InventoryHistory
-from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer
+from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem
+from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, OrderItemSerializer
 from decimal import Decimal # Added because math is dumb (decimals and floats can't multiply)
 
 # Example of data view used for testing
@@ -231,3 +231,26 @@ def inventory_forecast(request, inventory_id, forecast_date):
         'forecasted_orders': round(forecasted_orders, 2),
         'restock_message': restock_message
     })
+
+# --------- AUDIT TRAIL VIEWS --------- #
+
+@api_view(['GET'])
+def audit_trail_list(request):
+    audit_trails = AuditTrail.objects.all()
+    serializer = AuditTrailSerializer(audit_trails, many=True)
+    return Response(serializer.data)
+
+
+# --------- ORDER ITEM VIEWS --------- #
+
+@api_view(['GET'])
+def order_item_list(request):
+    order_items = OrderItem.objects.all()
+    serializer = OrderItemSerializer(order_items, many=True)
+    return Response(serializer.data)
+
+# --------- INDEX VIEWS --------- #
+
+@api_view(['GET'])
+def index_view(request):
+    return Response({"message": "Welcome to the API index"})
