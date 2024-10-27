@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
-from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem
+from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, CustomerOrder
 from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, OrderItemSerializer
 from decimal import Decimal # Added because math is dumb (decimals and floats can't multiply)
 
@@ -47,7 +47,7 @@ def logout_view(request):
 def profile_detail(request):
     user = request.user  # Get the currently logged-in user
     try:
-        profile = Profile.objects.get(user=user, is_deleted=False)
+        profile = Profile.objects.get(user=user, is_deleted=False) # Check for soft deletion
     except Profile.DoesNotExist:
         return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -252,3 +252,15 @@ def order_item_list(request):
 @api_view(['GET'])
 def index_view(request):
     return Response({"message": "Welcome to the API index"})
+
+# --------- TRACKING SHIPPING VIEWS --------- #
+
+def mark_order_as_shipped(request, order_id):
+    try:
+        order = CustomerOrder.objects.get(id=order_id)
+    except CustomerOrder.DoesNotExist:
+        return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    order.shipped = True
+    order.save()
+    return Response({'message': 'Order marked as shipped successfully'}, status=status.HTTP_200_OK)

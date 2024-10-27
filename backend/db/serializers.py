@@ -129,7 +129,7 @@ class CustomerOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerOrder
         fields = '__all__'
-        extra_kwargs = {'is_deleted': {'read_only': True}}
+        extra_kwargs = {'is_deleted': {'read_only': True}, 'shipped': {'read_only': False}}
 
 # Order Item Serializer
 class OrderItemSerializer(serializers.ModelSerializer):

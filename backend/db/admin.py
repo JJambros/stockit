@@ -3,6 +3,7 @@ from .models import Profile, Inventory, Customer, Dashboard, Location, Inventory
     ForecastingPreferences, ForecastResults, DashboardReports, DashboardVisuals, ReportDateRange, \
     UserDashSettings, OrderStatus, ReorderThreshold, Supplier, PurchaseOrder, Notifications, \
     CustomerOrder, OrderItem, Shipment, AuditTrail, WorksOn  # Import your models
+from .signals import create_audit_trail
 
 
 # Base Admin class to handle soft deletion filtering and restoration
@@ -15,7 +16,7 @@ class SoftDeleteAdmin(admin.ModelAdmin):
     # Add an action to restore soft-deleted records
     def restore_records(self, request, queryset):
         queryset.update(is_deleted=False)
-        self.message_user(request, "Selected records have been restored.")
+        self.message_user(request, "Selected profiles have been restored.")
 
     # Register the restore action
     actions = ['restore_records']
@@ -25,15 +26,14 @@ class SoftDeleteAdmin(admin.ModelAdmin):
 class CustomerOrderAdmin(SoftDeleteAdmin):
     def save_model(self, request, obj, form, change):
         obj.save()
-        # Pass user to the signal when saving the model
-        create_audit_trail_on_save(sender=CustomerOrder, instance=obj, created=not change, user=request.user)
+        # Use create_audit_trail directly instead
+        create_audit_trail(obj, 'Created' if not change else 'Updated', request.user)
 
     def delete_model(self, request, obj):
-        # Soft delete the CustomerOrder instead of deleting it
         obj.is_deleted = True
         obj.save()
-        # Optionally create an audit entry for soft deletion
-        create_audit_trail_on_save(sender=CustomerOrder, instance=obj, created=False, user=request.user)
+        # Use create_audit_trail for soft deletion
+        create_audit_trail(obj, 'Soft Deleted', request.user)
 
 
 # Register your models with SoftDeleteAdmin or custom admin classes

@@ -10,15 +10,37 @@ from django.contrib.contenttypes.fields import GenericForeignKey # Used to refer
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, default=1)  # Link Profile to User
     Fname = models.CharField(max_length=15)
-    Minit = models.CharField(max_length=1, null=True, blank=True) 
-    Lname = models.CharField(max_length=15) 
+    Minit = models.CharField(max_length=1, null=True, blank=True)
+    Lname = models.CharField(max_length=15)
     email = models.EmailField(max_length=50, unique=True)  # Unique
     phone_number = models.CharField(max_length=20, unique=True)  # Unique
-    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
+    is_deleted = models.BooleanField(default=False)  # Field for soft deletion
+
+    def delete(self, using=None, keep_parents=False):
+        """
+        Override the delete method to implement soft deletion.
+        Instead of deleting the profile, mark it as deleted.
+        """
+        self.is_deleted = True
+        self.save()
+
+    def restore(self):
+        """
+        Restore a soft-deleted profile by setting is_deleted to False.
+        """
+        self.is_deleted = False
+        self.save()
 
     def __str__(self):
         return f'{self.Fname} {self.Lname}'
 
+    @classmethod
+    def active_profiles(cls):
+        """
+        Class method to filter only active (non-soft-deleted) profiles.
+        """
+        return cls.objects.filter(is_deleted=False)
+    
 # Inventory class to store information on inventory items
 class Inventory(models.Model):
     inventory_id = models.AutoField(primary_key=True)
@@ -166,8 +188,19 @@ class UserDashSettings(models.Model):
 
 # Orderstatus model to store information on the status of the order
 class OrderStatus(models.Model):
+    PROCESSING = 'processing'
+    SHIPPED = 'shipped'
+    DELIVERED = 'delivered'
+
+    STATUS_CHOICES = (
+        (PROCESSING, 'Processing'),
+        (SHIPPED, 'Shipped'),
+        (DELIVERED, 'Delivered'),
+    )
+
+    current_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PROCESSING)
+
     status_id = models.AutoField(primary_key=True)
-    current_status = models.IntegerField()
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
@@ -229,6 +262,16 @@ class CustomerOrder(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Add this line to link to the user
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
+    shipped = models.BooleanField(default=False)  # To mark when the item is ready for shipment
+
+    def update_status_to_shipped(self):
+        if self.shipped:
+            self.status.current_status = OrderStatus.SHIPPED
+            self.status.save()
+
+    def mark_as_delivered(self):
+        self.status.current_status = OrderStatus.DELIVERED
+        self.status.save()
 
     def __str__(self):
         return f'Customer Order {self.order_id} from {self.from_company} to {self.to_company}'
@@ -247,8 +290,8 @@ class OrderItem(models.Model):
 # Shipment model to hold information about shipping
 class Shipment(models.Model):
     shipment_id = models.AutoField(primary_key=True)
-    tracking_number = models.IntegerField()
-    shipping_company = models.IntegerField()
+    tracking_number = models.CharField(max_length=20, default="0000")  # Default tracking number
+    shipping_company = models.CharField(max_length=100, default="To Be Determined")  # Default company name
     shipped_date = models.DateField()
     est_delivery_date = models.DateField()
     order = models.ForeignKey(CustomerOrder, on_delete=models.CASCADE)  # Link to CustomerOrder
@@ -256,7 +299,6 @@ class Shipment(models.Model):
 
     def __str__(self):
         return f'Shipment {self.shipment_id} for Order {self.order}'
-
 
 class AuditTrail(models.Model):
     audit_id = models.AutoField(primary_key=True)

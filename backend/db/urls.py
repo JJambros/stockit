@@ -31,4 +31,7 @@ urlpatterns = [
 
     # Order Items URLs
     path('order-items/', views.order_item_list, name='order-item-list'),  # List all order items
+
+    # Orders Shipped URLs
+    path('orders/<int:order_id>/mark_shipped/', views.mark_order_as_shipped, name='mark-order-shipped'), # Endpoint to mark an order as shipped
 ]

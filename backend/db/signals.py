@@ -1,9 +1,12 @@
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from crum import get_current_user  # Import from crum to get the current user context
+from django.utils import timezone # For Tracking Shipping
+from datetime import timedelta # For Tracking Shipping
+from threading import Timer # For Tracking Shipping
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from .models import AuditTrail, OrderItem, PurchaseOrder, Inventory, InventoryHistory, Profile
+from .models import AuditTrail, OrderItem, PurchaseOrder, Inventory, InventoryHistory, Profile, Shipment
 
 
 # --------- SIGNAL FOR AUDIT TRAIL --------- #
@@ -126,4 +129,20 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
             Fname=instance.first_name,
             Lname=instance.last_name,
             email=instance.email
+        )
+
+# --------- SIGNAL FOR TRACKING SHIPPING --------- #
+
+@receiver(post_save, sender=OrderItem)
+def create_shipment_on_order_item(sender, instance, created, **kwargs):
+    if created:
+        # Calculate the shipment and estimated delivery dates
+        shipped_date = timezone.now().date()
+        est_delivery_date = shipped_date + timedelta(days=1)
+
+        # Create the Shipment automatically
+        Shipment.objects.create(
+            order=instance.order,
+            shipped_date=shipped_date,
+            est_delivery_date=est_delivery_date
         )
