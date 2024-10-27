@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { MyDataService } from '../my-data.service';
+import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-order',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './order.component.html',
   styleUrl: './order.component.css'
 })

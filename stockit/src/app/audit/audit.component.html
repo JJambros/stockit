@@ -9,20 +9,22 @@
       <table class="table">
           <thead>
               <tr class="table-primary">
-                <th>Inventory Name</th>
-                <th>Amount</th>
+                <th>Object id</th>
+                <th>Description</th>
                 <th>Employee Name</th>
                 <th>Time</th>
               </tr>
           </thead>
           <tbody>
               <tr class="table-light" *ngFor="let trail of auditTrails">
-                <td>{{trail.name}}</td>
-                <td>{{trail.quantity}}</td>
+                <td>{{trail.object_id}}</td>
+                <td>{{trail.changed_desc}}</td>
                 <td>{{trail.changed_by}}</td>
                 <td>{{trail.change_time}}</td>
               </tr>
-              <tr></tr>
+              <tr *ngIf="auditTrails.length === 0">
+                <td>no audit trails available</td>
+              </tr>
           </tbody>
       </table>
   </div>

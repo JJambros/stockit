@@ -1,21 +1,26 @@
 import { Component, OnInit } from '@angular/core';
 import { MyDataService } from '../my-data.service';
-import { error } from 'console';
-
+import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-audit',
   standalone: true,
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './audit.component.html',
-  styleUrl: './audit.component.css'
+  styleUrls: ['./audit.component.css'],
+  providers: [MyDataService]
 })
 export class AuditComponent implements OnInit {
-  auditTrails: any[] =[]; 
+  // auditTrails: AuditTrail[] =[]; 
+  auditTrails:any;
   constructor(private myDataService: MyDataService){}
 
   ngOnInit(): void {
-    this.myDataService.getData().subscribe(
-      (data) => (this.auditTrails = data),
+    this.myDataService.getAudit().subscribe(
+      (data) => {
+        console.log('got data', data);
+        this.auditTrails =data;
+        // this.auditTrails = Array.isArray(data) ? data : [];
+      },
       (error) => console.error('error fetching data', error)
     );
   }
