@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta        # Added for forecasting
+from django.db.models import Avg, Sum                # Added for forecasting
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -5,8 +7,9 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
-from .models import Profile, Inventory, Dashboard
+from .models import Profile, Inventory, Dashboard, InventoryHistory
 from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer
+from decimal import Decimal # Added because math is dumb (decimals and floats can't multiply)
 
 # Example of data view used for testing
 @api_view(['GET'])
@@ -156,3 +159,75 @@ def dashboard_detail(request, pk):
         # Delete the dashboard entry
         dashboard.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    
+# --------- INVENTORY FORECAST VIEWS --------- #
+
+@api_view(['GET'])
+def inventory_forecast(request, inventory_id, forecast_date):
+    try:
+        inventory = Inventory.objects.get(inventory_id=inventory_id)
+    except Inventory.DoesNotExist:
+        return Response({'error': 'Inventory not found'}, status=404)
+
+    # Convert the input forecast_date to a date object
+    try:
+        forecast_date = datetime.strptime(forecast_date, '%Y-%m-%d').date()
+    except ValueError:
+        return Response({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=400)
+
+    # Fetch historical sales data (past 3 months)
+    three_months_ago = datetime.now().date() - timedelta(days=90)
+    sales_history = InventoryHistory.objects.filter(
+        inventory=inventory, 
+        transaction_type='sale', 
+        transaction_date__gte=three_months_ago
+    )
+
+    if not sales_history.exists():
+        return Response({'error': 'Not enough historical data for forecasting'}, status=400)
+
+    # Calculate the average daily sales
+    avg_daily_sales = sales_history.aggregate(Avg('quantity'))['quantity__avg']
+
+    # Calculate the number of days between today and the forecast date
+    days_into_future = (forecast_date - datetime.now().date()).days
+
+    # Forecasted sales and quantity used
+    forecasted_sales = avg_daily_sales * days_into_future
+    forecasted_remaining_quantity = inventory.quantity - forecasted_sales
+
+    # Calculate profit as (price - cost) * forecasted quantity sold
+    forecasted_profit = (Decimal(inventory.price) - Decimal(inventory.cost)) * Decimal(forecasted_sales)
+    forecasted_expenses = Decimal(forecasted_sales) * Decimal(inventory.cost)
+
+    # Calculate the estimated number of orders based on historical order data
+    avg_daily_orders = sales_history.count() / 90  # Orders per day, based on the last 3 months
+    forecasted_orders = avg_daily_orders * days_into_future
+
+    # Updated response with rounding to 2 decimal places
+    forecasted_profit = round(float(forecasted_profit), 2)
+    forecasted_expenses = round(float(forecasted_expenses), 2)
+    forecasted_quantity_used = round(forecasted_sales, 2)
+    forecasted_remaining_quantity = round(forecasted_remaining_quantity, 2)
+    forecasted_orders = round(forecasted_orders, 2)
+
+    # Update the restock message with rounded value
+    if forecasted_remaining_quantity < 0:
+        restock_amount = abs(forecasted_remaining_quantity)  # How much to restock
+        restock_message = f"Insufficient quantity. You will need to restock at least {round(restock_amount, 2)} units."
+    else:
+        restock_message = None
+
+    # Return the forecast results
+    # Profits and expenses converts to float if needed
+    # Rounds to 2 decimal places
+    return Response({
+        'forecast_date': forecast_date,
+        'forecasted_profit': round(float(forecasted_profit), 2),
+        'forecasted_expenses': round(float(forecasted_expenses), 2),
+        'forecasted_quantity_used': round(forecasted_sales, 2),
+        'forecasted_remaining_quantity': round(forecasted_remaining_quantity, 2),
+        'forecasted_orders': round(forecasted_orders, 2),
+        'restock_message': restock_message
+    })
