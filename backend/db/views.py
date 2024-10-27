@@ -7,8 +7,8 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
-from .models import Profile, Inventory, Dashboard, InventoryHistory
-from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer
+from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, CustomerOrder
+from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, OrderItemSerializer
 from decimal import Decimal # Added because math is dumb (decimals and floats can't multiply)
 
 # Example of data view used for testing
@@ -40,17 +40,14 @@ def logout_view(request):
     return Response({'success': 'Logged out'}, status=status.HTTP_200_OK)
 
 
-
-
 # --------- PROFILE VIEWS (For managing user profiles) --------- #
 
 # Get/update the logged-in user's profile
 @api_view(['GET', 'PUT'])
 def profile_detail(request):
     user = request.user  # Get the currently logged-in user
-    print(f"Logged in user: {user}")  # Add this to check the user
     try:
-        profile = Profile.objects.get(user=user)
+        profile = Profile.objects.get(user=user, is_deleted=False) # Check for soft deletion
     except Profile.DoesNotExist:
         return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -75,7 +72,7 @@ def profile_detail(request):
 def inventory_list(request):
     if request.method == 'GET':
         # Retrieve all inventory items
-        inventory = Inventory.objects.all()
+        inventory = Inventory.objects.filter(is_deleted=False)  # Exclude soft-deleted items
         serializer = InventorySerializer(inventory, many=True)
         return Response(serializer.data)
 
@@ -87,11 +84,11 @@ def inventory_list(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# Retrieve, update, or delete a specific inventory item
+# Retrieve, update, or soft-delete a specific inventory item
 @api_view(['GET', 'PUT', 'DELETE'])
 def inventory_detail(request, pk):
     try:
-        inventory = Inventory.objects.get(pk=pk)
+        inventory = Inventory.objects.get(pk=pk, is_deleted=False)
     except Inventory.DoesNotExist:
         return Response({'error': 'Inventory not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -109,8 +106,9 @@ def inventory_detail(request, pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
-        # Delete the inventory item
-        inventory.delete()
+        # Soft delete the inventory item
+        inventory.is_deleted = True
+        inventory.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -121,7 +119,7 @@ def inventory_detail(request, pk):
 def dashboard_list(request):
     if request.method == 'GET':
         # Retrieve all dashboard data
-        dashboards = Dashboard.objects.all()
+        dashboards = Dashboard.objects.filter(is_deleted=False)  # Exclude soft-deleted items
         serializer = DashboardSerializer(dashboards, many=True)
         return Response(serializer.data)
 
@@ -133,12 +131,11 @@ def dashboard_list(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-# Retrieve, update, or delete a specific dashboard entry
+# Retrieve, update, or soft-delete a specific dashboard entry
 @api_view(['GET', 'PUT', 'DELETE'])
 def dashboard_detail(request, pk):
     try:
-        dashboard = Dashboard.objects.get(pk=pk)
+        dashboard = Dashboard.objects.get(pk=pk, is_deleted=False)
     except Dashboard.DoesNotExist:
         return Response({'error': 'Dashboard not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -156,17 +153,18 @@ def dashboard_detail(request, pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
-        # Delete the dashboard entry
-        dashboard.delete()
+        # Soft delete the dashboard entry
+        dashboard.is_deleted = True
+        dashboard.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-    
+
+
 # --------- INVENTORY FORECAST VIEWS --------- #
 
 @api_view(['GET'])
 def inventory_forecast(request, inventory_id, forecast_date):
     try:
-        inventory = Inventory.objects.get(inventory_id=inventory_id)
+        inventory = Inventory.objects.get(inventory_id=inventory_id, is_deleted=False)  # Check for soft deletion
     except Inventory.DoesNotExist:
         return Response({'error': 'Inventory not found'}, status=404)
 
@@ -220,8 +218,6 @@ def inventory_forecast(request, inventory_id, forecast_date):
         restock_message = None
 
     # Return the forecast results
-    # Profits and expenses converts to float if needed
-    # Rounds to 2 decimal places
     return Response({
         'forecast_date': forecast_date,
         'forecasted_profit': round(float(forecasted_profit), 2),
@@ -231,3 +227,40 @@ def inventory_forecast(request, inventory_id, forecast_date):
         'forecasted_orders': round(forecasted_orders, 2),
         'restock_message': restock_message
     })
+
+
+# --------- AUDIT TRAIL VIEWS --------- #
+
+@api_view(['GET'])
+def audit_trail_list(request):
+    audit_trails = AuditTrail.objects.all()  # No need to filter by 'is_deleted' if AuditTrail is permanent
+    serializer = AuditTrailSerializer(audit_trails, many=True)
+    return Response(serializer.data)
+
+
+# --------- ORDER ITEM VIEWS --------- #
+
+@api_view(['GET'])
+def order_item_list(request):
+    order_items = OrderItem.objects.filter(is_deleted=False)  # Exclude soft-deleted items
+    serializer = OrderItemSerializer(order_items, many=True)
+    return Response(serializer.data)
+
+
+# --------- INDEX VIEWS --------- #
+
+@api_view(['GET'])
+def index_view(request):
+    return Response({"message": "Welcome to the API index"})
+
+# --------- TRACKING SHIPPING VIEWS --------- #
+
+def mark_order_as_shipped(request, order_id):
+    try:
+        order = CustomerOrder.objects.get(id=order_id)
+    except CustomerOrder.DoesNotExist:
+        return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    order.shipped = True
+    order.save()
+    return Response({'message': 'Order marked as shipped successfully'}, status=status.HTTP_200_OK)
