@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 export class MyDataService {
   private apiUrl = 'http://localhost:8000/api/data/';  // Django API URL
   private profileUrl = 'http://localhost:8000/api/profile/';
-  private auditUrl = 'http://localhost:8000/api/audittrail/';
+  private auditUrl = 'http://localhost:8000/api/audit-trails/';
 
   constructor(private http: HttpClient) { }
 
@@ -20,7 +20,7 @@ export class MyDataService {
       return this.http.get(this.profileUrl);
     }
 
-    getAudit(): Observable<AuditTrail[]>{
-      return this.http.get<AuditTrail[]>(this.auditUrl);
+    getAudit(): Observable<any>{
+      return this.http.get(this.auditUrl);
     }
 }

@@ -232,6 +232,7 @@ def inventory_forecast(request, inventory_id, forecast_date):
 # --------- AUDIT TRAIL VIEWS --------- #
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def audit_trail_list(request):
     audit_trails = AuditTrail.objects.all()  # No need to filter by 'is_deleted' if AuditTrail is permanent
     serializer = AuditTrailSerializer(audit_trails, many=True)

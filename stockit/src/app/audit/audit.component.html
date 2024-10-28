@@ -22,7 +22,7 @@
                 <td>{{trail.changed_by}}</td>
                 <td>{{trail.change_time}}</td>
               </tr>
-              <tr *ngIf="auditTrails.length === 0">
+              <tr *ngIf="auditTrails?.length === 0">
                 <td>no audit trails available</td>
               </tr>
           </tbody>
