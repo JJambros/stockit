@@ -19,4 +19,19 @@ urlpatterns = [
     # Dashboard URLs
     path('dashboard/', views.dashboard_list, name='dashboard-list'),  # List and create dashboard entries
     path('dashboard/<int:pk>/', views.dashboard_detail, name='dashboard-detail'),  # Get, update, delete dashboard entry
+
+    # Inventory Forecasting URLs
+    path('inventory/forecast/<int:inventory_id>/<str:forecast_date>/', views.inventory_forecast, name='inventory-forecast'),
+
+    # Index URLs
+    path('index/', views.index_view, name='index-view'),
+
+    # Audit Trail URLs
+    path('audit-trails/', views.audit_trail_list, name='audit-trail-list'),  # List all audit trail entries
+
+    # Order Items URLs
+    path('order-items/', views.order_item_list, name='order-item-list'),  # List all order items
+
+    # Orders Shipped URLs
+    path('orders/<int:order_id>/mark_shipped/', views.mark_order_as_shipped, name='mark-order-shipped'), # Endpoint to mark an order as shipped
 ]
