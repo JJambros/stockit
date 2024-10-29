@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from .models import Profile, Inventory, Customer, Dashboard, Location, InventoryHistory, \
     ForecastingPreferences, ForecastResults, DashboardReports, DashboardVisuals, ReportDateRange, \
     UserDashSettings, OrderStatus, ReorderThreshold, Supplier, PurchaseOrder, Notifications, \
-    CustomerOrder, OrderItem, Shipment, AuditTrail, WorksOn  # Import your models
+    CustomerOrder, OrderItem, Shipment, AuditTrail, WorksOn, Category  # Import your models
 from .signals import create_audit_trail
 
 # Define a custom filter for the is_deleted field
@@ -74,6 +74,7 @@ class CustomerOrderAdmin(SoftDeleteAdmin):
 
 # Register your models with SoftDeleteAdmin or custom admin classes
 admin.site.register(Profile, SoftDeleteAdmin)
+admin.site.register(Category, SoftDeleteAdmin)
 admin.site.register(Inventory, SoftDeleteAdmin)
 admin.site.register(Customer, SoftDeleteAdmin)
 admin.site.register(Dashboard, SoftDeleteAdmin)

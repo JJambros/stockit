@@ -3,7 +3,7 @@ from .models import (Profile, Inventory, Customer, Dashboard, Location, Inventor
                      ForecastingPreferences, ForecastResults, DashboardReports, DashboardVisuals, 
                      ReportDateRange, UserDashSettings, OrderStatus, ReorderThreshold, Supplier,
                      PurchaseOrder, Notifications, CustomerOrder, OrderItem, Shipment, AuditTrail,
-                     WorksOn)
+                     WorksOn, Category)
 
 # Profile Serializer
 class ProfileSerializer(serializers.ModelSerializer):
@@ -12,12 +12,20 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = '__all__'  # Optionally include 'is_deleted' if needed
         extra_kwargs = {'is_deleted': {'read_only': True}}  # Make 'is_deleted' read-only
 
+# Category Serializer
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'  # or limit to necessary fields
+        extra_kwargs = {'is_deleted': {'read_only': True}}  # Make 'is_deleted' read-only
+
 # Inventory Serializer
 class InventorySerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
     class Meta:
         model = Inventory
         fields = '__all__'
-        extra_kwargs = {'is_deleted': {'read_only': True}}
+        extra_kwargs = {'is_deleted': {'read_only': True}}  # Make 'is_deleted' read-only
 
 # Customer Serializer
 class CustomerSerializer(serializers.ModelSerializer):

@@ -1,5 +1,6 @@
-from datetime import datetime, timedelta        # Added for forecasting
-from django.db.models import Avg, Sum                # Added for forecasting
+from django.utils import timezone               # Added for net sales in dashboard
+from datetime import datetime, timedelta        # Added for forecasting and net sales
+from django.db.models import Avg, Sum, F        # Added for forecasting and net sales
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -264,3 +265,36 @@ def mark_order_as_shipped(request, order_id):
     order.shipped = True
     order.save()
     return Response({'message': 'Order marked as shipped successfully'}, status=status.HTTP_200_OK)
+
+# --------- DASHBOARD VIEWS --------- #
+
+# --- VIEW FOR NET SALES --- #
+@api_view(['GET'])
+def dashboard_net_sales(request):
+    # Get the time frame from request parameters
+    time_frame = request.query_params.get('time_frame', '24h')
+
+    # Determine the date range based on the time frame
+    if time_frame == '24h':
+        start_date = timezone.now() - timedelta(hours=24)
+    elif time_frame == 'week':
+        start_date = timezone.now() - timedelta(weeks=1)
+    elif time_frame == 'month':
+        start_date = timezone.now() - timedelta(days=30)
+    elif time_frame == 'overall':
+        start_date = None  # No filter for 'overall'
+    else:
+        return Response({"error": "Invalid time frame"}, status=400)
+
+    # Filter InventoryHistory entries based on time frame and transaction type 'sale'
+    history_query = InventoryHistory.objects.filter(transaction_type='sale')
+    if start_date:
+        history_query = history_query.filter(transaction_date__gte=start_date)
+
+    # Calculate net sales by summing quantity * price for the filtered transactions
+    net_sales = (
+        history_query.annotate(total_price=F('quantity') * F('inventory__price'))
+        .aggregate(net_sales=Sum('total_price'))['net_sales'] or 0
+    )
+
+    return Response({"net_sales": net_sales, "time_frame": time_frame})
