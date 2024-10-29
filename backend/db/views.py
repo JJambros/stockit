@@ -8,8 +8,8 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
-from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, CustomerOrder
-from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, OrderItemSerializer
+from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, CustomerOrder, Shipment
+from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, OrderItemSerializer, ShipmentSerializer
 from decimal import Decimal # Added because math is dumb (decimals and floats can't multiply)
 
 # Example of data view used for testing
@@ -254,8 +254,55 @@ def order_item_list(request):
 def index_view(request):
     return Response({"message": "Welcome to the API index"})
 
-# --------- TRACKING SHIPPING VIEWS --------- #
+# --------- SHIPMENT VIEWS --------- # 
 
+# List all shipments or create a new shipment
+@api_view(['GET', 'POST'])
+def shipment_list(request):
+    if request.method == 'GET':
+        # Retrieve all shipments, excluding soft-deleted ones
+        shipments = Shipment.objects.filter(is_deleted=False)
+        serializer = ShipmentSerializer(shipments, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        # Create a new shipment
+        serializer = ShipmentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Retrieve, update, or soft delete a specific shipment
+@api_view(['GET', 'PUT', 'DELETE'])
+def shipment_detail(request, pk):
+    try:
+        shipment = Shipment.objects.get(pk=pk, is_deleted=False)
+    except Shipment.DoesNotExist:
+        return Response({'error': 'Shipment not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        # Return shipment details
+        serializer = ShipmentSerializer(shipment)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        # Update shipment
+        serializer = ShipmentSerializer(shipment, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        # Soft delete the shipment
+        shipment.is_deleted = True
+        shipment.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+    # --- TRACKING SHIPPING VIEWS --- #
+@api_view(['POST'])
 def mark_order_as_shipped(request, order_id):
     try:
         order = CustomerOrder.objects.get(id=order_id)
@@ -268,7 +315,7 @@ def mark_order_as_shipped(request, order_id):
 
 # --------- DASHBOARD VIEWS --------- #
 
-# --- VIEW FOR NET SALES --- #
+    # --- VIEW FOR NET SALES --- #
 @api_view(['GET'])
 def dashboard_net_sales(request):
     # Get the time frame from request parameters

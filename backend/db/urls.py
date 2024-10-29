@@ -19,7 +19,7 @@ urlpatterns = [
     # Dashboard URLs
     path('dashboard/', views.dashboard_list, name='dashboard-list'),  # List and create dashboard entries
     path('dashboard/<int:pk>/', views.dashboard_detail, name='dashboard-detail'),  # Get, update, delete dashboard entry
-    # --- Net sales --- #
+        # --- Net sales --- #
     path('dashboard/net-sales/', views.dashboard_net_sales, name='dashboard-net-sales'),
 
     # Inventory Forecasting URLs
@@ -34,6 +34,9 @@ urlpatterns = [
     # Order Items URLs
     path('order-items/', views.order_item_list, name='order-item-list'),  # List all order items
 
-    # Orders Shipped URLs
+    # Shipment related URLs
+    path('shipments/', views.shipment_list, name='shipment-list'),  # List and create shipments
+    path('shipments/<int:pk>/', views.shipment_detail, name='shipment-detail'),  # Retrieve, update, delete specific shipment
+        # --- Marked order as shipped --- #
     path('orders/<int:order_id>/mark_shipped/', views.mark_order_as_shipped, name='mark-order-shipped'), # Endpoint to mark an order as shipped
 ]
