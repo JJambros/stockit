@@ -16,11 +16,15 @@ urlpatterns = [
     path('inventory/', views.inventory_list, name='inventory-list'),  # List and create inventory items
     path('inventory/<int:pk>/', views.inventory_detail, name='inventory-detail'),  # Get, update, delete specific item
 
-    # Dashboard URLs
+    # Dashboard Related URLs
     path('dashboard/', views.dashboard_list, name='dashboard-list'),  # List and create dashboard entries
     path('dashboard/<int:pk>/', views.dashboard_detail, name='dashboard-detail'),  # Get, update, delete dashboard entry
-        # --- Net sales --- #
+        # --- Net Sales --- #
     path('dashboard/net-sales/', views.dashboard_net_sales, name='dashboard-net-sales'),
+        # --- Total Orders --- #
+    path('dashboard/total-orders/', views.dashboard_total_orders, name='dashboard-total-orders'),
+        # --- Net Purchases by Category --- #
+    path('dashboard/net-purchases-by-category/', views.dashboard_net_purchases_by_category, name='dashboard-net-purchases-by-category'),
 
     # Inventory Forecasting URLs
     path('inventory/forecast/<int:inventory_id>/<str:forecast_date>/', views.inventory_forecast, name='inventory-forecast'),

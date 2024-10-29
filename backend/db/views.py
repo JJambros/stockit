@@ -8,8 +8,8 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
-from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, CustomerOrder, Shipment
-from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, OrderItemSerializer, ShipmentSerializer
+from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, CustomerOrder, Shipment, PurchaseOrder
+from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, OrderItemSerializer, ShipmentSerializer, PurchaseOrderSerializer
 from decimal import Decimal # Added because math is dumb (decimals and floats can't multiply)
 
 # Example of data view used for testing
@@ -313,7 +313,9 @@ def mark_order_as_shipped(request, order_id):
     order.save()
     return Response({'message': 'Order marked as shipped successfully'}, status=status.HTTP_200_OK)
 
+
 # --------- DASHBOARD VIEWS --------- #
+
 
     # --- VIEW FOR NET SALES --- #
 @api_view(['GET'])
@@ -345,3 +347,70 @@ def dashboard_net_sales(request):
     )
 
     return Response({"net_sales": net_sales, "time_frame": time_frame})
+
+
+    # --- VIEW FOR TOTAL ORDERS --- #
+
+@api_view(['GET'])
+def dashboard_total_orders(request):
+    # Get the time frame from request parameters
+    time_frame = request.query_params.get('time_frame', '24h')
+
+    # Determine the date range based on the time frame
+    if time_frame == '24h':
+        start_date = timezone.now() - timedelta(hours=24)
+    elif time_frame == 'week':
+        start_date = timezone.now() - timedelta(weeks=1)
+    elif time_frame == 'month':
+        start_date = timezone.now() - timedelta(days=30)
+    elif time_frame == 'overall':
+        start_date = None  # No filter for 'overall'
+    else:
+        return Response({"error": "Invalid time frame"}, status=400)
+
+    # Filter InventoryHistory entries for 'sale' transactions and within the specified time frame
+    orders_query = InventoryHistory.objects.filter(transaction_type='sale')
+    if start_date:
+        orders_query = orders_query.filter(transaction_date__gte=start_date)
+
+    # Count the total orders (each sale transaction is considered an order)
+    total_orders = orders_query.count()
+
+    return Response({"total_orders": total_orders, "time_frame": time_frame})
+
+
+    # --- VIEWS FOR NET PURCHASES - BY CATEGORY --- #
+
+@api_view(['GET'])
+def dashboard_net_purchases_by_category(request):
+    # Get the time frame from request parameters
+    time_frame = request.query_params.get('time_frame', '24h')
+
+    # Determine the date range based on the time frame
+    if time_frame == '24h':
+        start_date = timezone.now() - timedelta(hours=24)
+    elif time_frame == 'week':
+        start_date = timezone.now() - timedelta(weeks=1)
+    elif time_frame == 'month':
+        start_date = timezone.now() - timedelta(days=30)
+    elif time_frame == 'overall':
+        start_date = None  # No filter for 'overall'
+    else:
+        return Response({"error": "Invalid time frame"}, status=400)
+
+    # Filter PurchaseOrder by date range
+    purchase_query = PurchaseOrder.objects.all()
+    if start_date:
+        purchase_query = purchase_query.filter(po_date__gte=start_date)
+
+    # Aggregate net purchases by category
+    net_purchases_by_category = (
+        purchase_query.values('inventory__category__name')  # Group by category name
+        .annotate(net_purchase=Sum(F('order_quantity') * F('inventory__cost')))
+        .order_by('inventory__category__name')
+    )
+
+    return Response({
+        "net_purchases_by_category": net_purchases_by_category,
+        "time_frame": time_frame
+    })
