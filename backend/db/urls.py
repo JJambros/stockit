@@ -25,6 +25,11 @@ urlpatterns = [
     path('dashboard/total-orders/', views.dashboard_total_orders, name='dashboard-total-orders'),
         # --- Net Purchases by Category --- #
     path('dashboard/net-purchases-by-category/', views.dashboard_net_purchases_by_category, name='dashboard-net-purchases-by-category'),
+        # --- Net Purchases by Item --- #
+    path('dashboard/net-purchases-by-item/', views.dashboard_net_purchases_by_item, name='dashboard-net-purchases-by-item'),
+        # --- Breakdown --- #
+    path('dashboard/total-breakdown/', views.dashboard_total_breakdown, name='dashboard-total-breakdown'),
+
 
     # Inventory Forecasting URLs
     path('inventory/forecast/<int:inventory_id>/<str:forecast_date>/', views.inventory_forecast, name='inventory-forecast'),
