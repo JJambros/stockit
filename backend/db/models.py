@@ -41,6 +41,16 @@ class Profile(models.Model):
         """
         return cls.objects.filter(is_deleted=False)
     
+# Category class to store information on categories
+class Category(models.Model):
+    category_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True, null=True)
+    is_deleted = models.BooleanField(default=False) # For soft deletion if needed
+
+    def __str__(self):
+        return self.name
+    
 # Inventory class to store information on inventory items
 class Inventory(models.Model):
     inventory_id = models.AutoField(primary_key=True)
@@ -49,6 +59,7 @@ class Inventory(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.IntegerField()
     forecast_level = models.IntegerField()
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)  # Link to Category
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
