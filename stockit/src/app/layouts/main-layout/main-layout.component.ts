@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { MyDataService } from '../../my-data.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -8,6 +9,15 @@ import { RouterOutlet } from '@angular/router';
   templateUrl: './main-layout.component.html',
   styleUrl: './main-layout.component.css'
 })
-export class MainLayoutComponent {
+export class MainLayoutComponent implements OnInit {
+  profile: any;
+
+  constructor(private dataService: MyDataService) { }
+
+  ngOnInit(): void {
+    this.dataService.getUserProfile().subscribe(data => {
+      this.profile = data;
+    });
+  }
 
 }

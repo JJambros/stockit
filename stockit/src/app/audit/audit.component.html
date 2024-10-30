@@ -1,0 +1,31 @@
+
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alice&amp;display=swap">
+  <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+  <link rel="stylesheet" href="assets/css/Search-Field-With-Icon.css">
+
+  <div class="search-container" style="padding-left: 150px;padding-right: 150px;"><input type="text" class="search-input" name="search-bar" placeholder="Search..."><button class="btn btn-light search-btn" type="button"> <i class="fa fa-search"></i></button></div>
+  <div class="table-responsive" style="padding-left: 150px;padding-right: 150px;">
+      <table datatable class="table">
+          <thead>
+              <tr class="table-primary">
+                <th>Object id</th>
+                <th>Description</th>
+                <th>Employee Name</th>
+                <th>Time</th>
+              </tr>
+          </thead>
+          <tbody>
+              <tr class="table-light" *ngFor="let trail of auditTrails">
+                <td>{{trail.object_id}}</td>
+                <td>{{trail.changed_desc}}</td>
+                <td>{{trail.changed_by}}</td>
+                <td>{{trail.change_time}}</td>
+              </tr>
+              <tr *ngIf="auditTrails?.length === 0">
+                <td>no audit trails available</td>
+              </tr>
+          </tbody>
+      </table>
+  </div>
+  <script src="assets/bootstrap/js/bootstrap.min.js"></script>
