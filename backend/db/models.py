@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import datetime
+from django.utils import timezone
 from django.contrib.auth.models import User  # Importing the built-in User model
 from django.contrib.contenttypes.models import ContentType # Store metadata about models installed in app (refer to any model in a generic way)
 from django.contrib.contenttypes.fields import GenericForeignKey # Used to refer to any specific object of any model in app
@@ -217,18 +218,6 @@ class OrderStatus(models.Model):
     def __str__(self):
         return f'Status {self.status_id}'
 
-# ReorderThreshold model to hold information on the threshold for a reorder 
-class ReorderThreshold(models.Model):
-    threshold_id = models.AutoField(primary_key=True)
-    reorder_point = models.IntegerField()
-    reorder_quantity = models.IntegerField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Link to User
-    inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
-    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
-
-    def __str__(self):
-        return f'Reorder Threshold {self.threshold_id} for {self.inventory}'
-
 # Supplier model to hold information about the Supplier
 class Supplier(models.Model):
     supplier_id = models.AutoField(primary_key=True)
@@ -239,6 +228,30 @@ class Supplier(models.Model):
 
     def __str__(self):
         return self.supplier_name
+
+# Supplier model to hold information about the Suppliers orders
+class SupplierOrder(models.Model):
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    product = models.ForeignKey(Inventory, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    status = models.CharField(max_length=20, default='Pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.supplier} - {self.product} - {self.quantity}'
+
+    # ReorderThreshold model to hold information on the threshold for a reorder
+class ReorderThreshold(models.Model):
+    threshold_id = models.AutoField(primary_key=True)
+    reorder_point = models.IntegerField()
+    reorder_quantity = models.IntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Link to User
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, default=1)  # New field for Supplier
+    inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
+
+    def __str__(self):
+        return f'Reorder Threshold {self.threshold_id} for {self.inventory}'
 
 # PurchaseOrder model to hold information about the Purchase Order
 class PurchaseOrder(models.Model):
