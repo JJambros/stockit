@@ -11,6 +11,8 @@ export class MyDataService {
   private auditUrl = 'http://localhost:8000/api/audit-trails/';
   private orderUrl = 'http://localhost:8000/api/shipments/';
   private inventoryUrl = 'http://localhost:8000/api/inventory/';
+  private dashboardOrders = 'http://localhost:8000/api/dashboard/total-orders/';
+  private dashboardNetSales = 'http://localhost:8000/api/dashboard/net-sales/';
   constructor(private http: HttpClient) { }
 
     getData(): Observable<any> {
@@ -31,5 +33,13 @@ export class MyDataService {
 
     getInventory(): Observable<any>{
       return this.http.get(this.inventoryUrl);
+    }
+
+    getDashboardOrders(params: string): Observable<any> {
+      return this.http.get(this.dashboardOrders, { params: { time_frame: params } });
+    }
+
+    getDashboardNetSales(params: string): Observable<any> {
+      return this.http.get(this.dashboardNetSales, { params: { time_frame: params } });
     }
 }

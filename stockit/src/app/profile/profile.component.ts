@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MyDataService } from '../my-data.service';
+import { AuthService } from '../auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-profile',
@@ -10,12 +12,24 @@ import { MyDataService } from '../my-data.service';
 })
 export class ProfileComponent implements OnInit {
   profile: any = {};
-  constructor(private myDataService: MyDataService){}
+  constructor(private dataService: MyDataService, private authService: AuthService, private router: Router){}
 
   ngOnInit(): void {
-    this.myDataService.getData().subscribe(
-      (data) => (this.profile = data),
-      (error) => console.error('error fetching data', error)
-    );
+    this.dataService.getUserProfile().subscribe(data => {
+      this.profile = data;
+    });
   }
+
+  logout(): void {
+    this.authService.logout().subscribe({
+      next: () => {
+        localStorage.removeItem('token');
+        this.router.navigate(['/login']);
+      },
+      error: (error) => {
+        console.error('Logout failed:', error);
+      }
+    });
+  }
+
 }
