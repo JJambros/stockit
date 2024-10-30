@@ -1,12 +1,14 @@
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
+from django.core.mail import send_mail
+from django.conf import settings
 from crum import get_current_user  # Import from crum to get the current user context
 from django.utils import timezone # For Tracking Shipping
 from datetime import timedelta # For Tracking Shipping
 from threading import Timer # For Tracking Shipping
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from .models import AuditTrail, OrderItem, PurchaseOrder, Inventory, InventoryHistory, Profile, Shipment
+from .models import AuditTrail, SupplierOrder, OrderItem, PurchaseOrder, Inventory, ReorderThreshold, InventoryHistory, Profile, Shipment
 
 
 # --------- SIGNAL FOR AUDIT TRAIL --------- #
@@ -76,6 +78,22 @@ def increase_inventory_on_purchase(sender, instance, created, **kwargs):
             inventory_item.save(update_fields=['quantity'])
             inventory_item._quantity_updated = True  # Mark as updated to prevent multiple saves
 
+@receiver(post_save, sender=Inventory)
+def auto_generate_order(sender, instance, **kwargs):
+    try:
+        # Retrieve the reorder threshold for this inventory item
+        threshold = ReorderThreshold.objects.get(inventory=instance)
+
+        # Check if the inventory quantity is below the reorder point
+        if instance.quantity < threshold.reorder_point:
+            SupplierOrder.objects.create(
+                supplier=threshold.supplier,  # Adjust if needed to get the relevant supplier
+                product=instance,
+                quantity=threshold.reorder_quantity  # Quantity to reorder from the threshold
+            )
+    except ReorderThreshold.DoesNotExist:
+        # Log or handle the case where no reorder threshold is set for this inventory item
+        print(f"No reorder threshold set for Inventory item: {instance.name}")
 
 # --------- SIGNAL FOR INVENTORY_HISTORY --------- #
 

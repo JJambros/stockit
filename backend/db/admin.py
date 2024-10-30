@@ -1,9 +1,9 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from .models import Profile, Inventory, Customer, Dashboard, Location, InventoryHistory, \
+from .models import Profile, Inventory, Customer, Dashboard, ReorderThreshold, Location, InventoryHistory, \
     ForecastingPreferences, ForecastResults, DashboardReports, DashboardVisuals, ReportDateRange, \
     UserDashSettings, OrderStatus, ReorderThreshold, Supplier, PurchaseOrder, Notifications, \
-    CustomerOrder, OrderItem, Shipment, AuditTrail, WorksOn, Category  # Import your models
+    CustomerOrder, OrderItem, Shipment, AuditTrail, WorksOn, Category, SupplierOrder  # Import your models
 from .signals import create_audit_trail
 
 # Define a custom filter for the is_deleted field
@@ -89,6 +89,7 @@ admin.site.register(UserDashSettings, SoftDeleteAdmin)
 admin.site.register(OrderStatus, SoftDeleteAdmin)
 admin.site.register(ReorderThreshold, SoftDeleteAdmin)
 admin.site.register(Supplier, SoftDeleteAdmin)
+admin.site.register(SupplierOrder, SoftDeleteAdmin)
 admin.site.register(PurchaseOrder, SoftDeleteAdmin)
 admin.site.register(Notifications, SoftDeleteAdmin)
 admin.site.register(CustomerOrder, CustomerOrderAdmin)  # Use the customized admin for CustomerOrder
@@ -96,3 +97,4 @@ admin.site.register(OrderItem, SoftDeleteAdmin)
 admin.site.register(Shipment, SoftDeleteAdmin)
 admin.site.register(AuditTrail)  # No need for soft deletion, so default admin is fine
 admin.site.register(WorksOn, SoftDeleteAdmin)
+
