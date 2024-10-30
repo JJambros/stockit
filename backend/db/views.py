@@ -1,5 +1,6 @@
-from datetime import datetime, timedelta        # Added for forecasting
-from django.db.models import Avg, Sum                # Added for forecasting
+from django.utils import timezone               # Added for dashboard (net calcs)
+from datetime import datetime, timedelta        # Added for forecasting and dashboard (net calcs)
+from django.db.models import Avg, Sum, F, Q, Count        # Added for forecasting and dashboard (net calcs & breakdown)
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -7,8 +8,8 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
-from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, CustomerOrder
-from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, OrderItemSerializer
+from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, CustomerOrder, Shipment, PurchaseOrder
+from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, OrderItemSerializer, ShipmentSerializer, PurchaseOrderSerializer
 from decimal import Decimal # Added because math is dumb (decimals and floats can't multiply)
 
 # Example of data view used for testing
@@ -254,14 +255,293 @@ def order_item_list(request):
 def index_view(request):
     return Response({"message": "Welcome to the API index"})
 
-# --------- TRACKING SHIPPING VIEWS --------- #
+# --------- SHIPMENT VIEWS --------- # 
 
+# List all shipments or create a new shipment
+@api_view(['GET', 'POST'])
+def shipment_list(request):
+    if request.method == 'GET':
+        # Retrieve all shipments, excluding soft-deleted ones
+        shipments = Shipment.objects.filter(is_deleted=False)
+        serializer = ShipmentSerializer(shipments, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        # Create a new shipment
+        serializer = ShipmentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Retrieve, update, or soft delete a specific shipment
+@api_view(['GET', 'PUT', 'DELETE'])
+def shipment_detail(request, pk):
+    try:
+        shipment = Shipment.objects.get(pk=pk, is_deleted=False)
+    except Shipment.DoesNotExist:
+        return Response({'error': 'Shipment not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        # Return shipment details
+        serializer = ShipmentSerializer(shipment)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        # Update shipment
+        serializer = ShipmentSerializer(shipment, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        # Soft delete the shipment
+        shipment.is_deleted = True
+        shipment.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+    # --- TRACKING SHIPPING VIEWS --- #
+@api_view(['POST'])
 def mark_order_as_shipped(request, order_id):
     try:
-        order = CustomerOrder.objects.get(id=order_id)
+        order = CustomerOrder.objects.get(order_id=order_id)
     except CustomerOrder.DoesNotExist:
         return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
 
     order.shipped = True
     order.save()
     return Response({'message': 'Order marked as shipped successfully'}, status=status.HTTP_200_OK)
+
+
+# --------- DASHBOARD VIEWS --------- #
+
+
+    # --- VIEW FOR NET SALES --- #
+@api_view(['GET'])
+def dashboard_net_sales(request):
+    # Get the time frame from request parameters
+    time_frame = request.query_params.get('time_frame', '24h')
+
+    # Determine the date range based on the time frame
+    if time_frame == '24h':
+        start_date = timezone.now() - timedelta(hours=24)
+    elif time_frame == 'week':
+        start_date = timezone.now() - timedelta(weeks=1)
+    elif time_frame == 'month':
+        start_date = timezone.now() - timedelta(days=30)
+    elif time_frame == 'overall':
+        start_date = None  # No filter for 'overall'
+    else:
+        return Response({"error": "Invalid time frame"}, status=400)
+
+    # Filter InventoryHistory entries based on time frame and transaction type 'sale'
+    history_query = InventoryHistory.objects.filter(transaction_type='sale')
+    if start_date:
+        history_query = history_query.filter(transaction_date__gte=start_date)
+
+    # Calculate net sales by summing quantity * price for the filtered transactions
+    net_sales = (
+        history_query.annotate(total_price=F('quantity') * F('inventory__price'))
+        .aggregate(net_sales=Sum('total_price'))['net_sales'] or 0
+    )
+
+    return Response({"net_sales": net_sales, "time_frame": time_frame})
+
+
+    # --- VIEW FOR TOTAL ORDERS --- #
+
+@api_view(['GET'])
+def dashboard_total_orders(request):
+    # Get the time frame from request parameters
+    time_frame = request.query_params.get('time_frame', '24h')
+
+    # Determine the date range based on the time frame
+    if time_frame == '24h':
+        start_date = timezone.now() - timedelta(hours=24)
+    elif time_frame == 'week':
+        start_date = timezone.now() - timedelta(weeks=1)
+    elif time_frame == 'month':
+        start_date = timezone.now() - timedelta(days=30)
+    elif time_frame == 'overall':
+        start_date = None  # No filter for 'overall'
+    else:
+        return Response({"error": "Invalid time frame"}, status=400)
+
+    # Filter InventoryHistory entries for 'sale' transactions and within the specified time frame
+    orders_query = InventoryHistory.objects.filter(transaction_type='sale')
+    if start_date:
+        orders_query = orders_query.filter(transaction_date__gte=start_date)
+
+    # Count the total orders (each sale transaction is considered an order)
+    total_orders = orders_query.count()
+
+    return Response({"total_orders": total_orders, "time_frame": time_frame})
+
+
+    # --- VIEWS FOR NET PURCHASES - BY CATEGORY --- #
+
+@api_view(['GET'])
+def dashboard_net_purchases_by_category(request):
+    # Get the time frame from request parameters
+    time_frame = request.query_params.get('time_frame', '24h')
+
+    # Determine the date range based on the time frame
+    if time_frame == '24h':
+        start_date = timezone.now() - timedelta(hours=24)
+    elif time_frame == 'week':
+        start_date = timezone.now() - timedelta(weeks=1)
+    elif time_frame == 'month':
+        start_date = timezone.now() - timedelta(days=30)
+    elif time_frame == 'overall':
+        start_date = None  # No filter for 'overall'
+    else:
+        return Response({"error": "Invalid time frame"}, status=400)
+
+    # Filter PurchaseOrder by date range
+    purchase_query = PurchaseOrder.objects.all()
+    if start_date:
+        purchase_query = purchase_query.filter(po_date__gte=start_date)
+
+    # Aggregate net purchases and total quantity by category
+    net_purchases_by_category = (
+        purchase_query.values('inventory__category__name')  # Group by category name
+        .annotate(
+            net_purchase=Sum(F('order_quantity') * F('inventory__cost')),
+            total_quantity=Sum('order_quantity')
+        )
+        .order_by('inventory__category__name')
+    )
+
+    return Response({
+        "net_purchases_by_category": net_purchases_by_category,
+        "time_frame": time_frame
+    })
+
+
+    # --- VIEWS FOR NET PURCHASES - BY ITEM --- #
+
+@api_view(['GET'])
+def dashboard_net_purchases_by_item(request):
+    # Get the time frame from request parameters
+    time_frame = request.query_params.get('time_frame', '24h')
+
+    # Determine the date range based on the time frame
+    if time_frame == '24h':
+        start_date = timezone.now() - timedelta(hours=24)
+    elif time_frame == 'week':
+        start_date = timezone.now() - timedelta(weeks=1)
+    elif time_frame == 'month':
+        start_date = timezone.now() - timedelta(days=30)
+    elif time_frame == 'overall':
+        start_date = None  # No filter for 'overall'
+    else:
+        return Response({"error": "Invalid time frame"}, status=400)
+
+    # Filter InventoryHistory for restock transactions within the time frame
+    history_query = InventoryHistory.objects.filter(transaction_type='restock')
+    if start_date:
+        history_query = history_query.filter(transaction_date__gte=start_date)
+
+    # Aggregate net purchases and total quantity by item
+    net_purchases_by_item = (
+        history_query.values('inventory__name')  # Group by inventory item name
+        .annotate(
+            net_purchase=Sum(F('quantity') * F('inventory__cost')),
+            total_quantity=Sum('quantity')
+        )
+        .order_by('inventory__name')
+    )
+
+    return Response({
+        "net_purchases_by_item": net_purchases_by_item,
+        "time_frame": time_frame
+    })
+
+    
+    # --- VIEWS FOR BREAKDOWN --- #
+
+@api_view(['GET'])
+def dashboard_total_breakdown(request):
+    # Get time frame from request parameters
+    time_frame = request.query_params.get('time_frame', '24h')
+    start_date = None  # Default to no filter if 'overall'
+
+    # Custom date frame inputs
+    custom_start = request.query_params.get('start_date')
+    custom_end = request.query_params.get('end_date')
+
+    # Calculate date range based on time frame
+    if custom_start and custom_end:
+        start_date = timezone.datetime.strptime(custom_start, '%Y-%m-%d').date()
+        end_date = timezone.datetime.strptime(custom_end, '%Y-%m-%d').date()
+    elif time_frame == '24h':
+        start_date = timezone.now() - timedelta(hours=24)
+    elif time_frame == 'week':
+        start_date = timezone.now() - timedelta(weeks=1)
+    elif time_frame == 'month':
+        start_date = timezone.now() - timedelta(days=30)
+    elif time_frame == 'overall':
+        start_date = None
+
+    # Filter InventoryHistory entries for sales and purchases
+    sales_query = InventoryHistory.objects.filter(transaction_type='sale')
+    purchases_query = InventoryHistory.objects.filter(transaction_type='restock')
+    if start_date:
+        sales_query = sales_query.filter(transaction_date__gte=start_date)
+        purchases_query = purchases_query.filter(transaction_date__gte=start_date)
+        if 'end_date' in locals():
+            sales_query = sales_query.filter(transaction_date__lte=end_date)
+            purchases_query = purchases_query.filter(transaction_date__lte=end_date)
+
+    # Sales and Purchases Counts
+    total_sales = sales_query.aggregate(total_sales=Sum('quantity'))['total_sales'] or 0
+    total_purchases = purchases_query.aggregate(total_purchases=Sum('quantity'))['total_purchases'] or 0
+
+    # Filter Shipments for assigned shipments and shipments in need of attention
+    shipment_query = Shipment.objects.exclude(tracking_number='0000', shipping_company='To Be Determined')
+    shipments_needing_attention_query = Shipment.objects.filter(Q(tracking_number='0000') | Q(shipping_company='To Be Determined'))
+
+    if start_date:
+        shipment_query = shipment_query.filter(shipped_date__gte=start_date)
+        shipments_needing_attention_query = shipments_needing_attention_query.filter(shipped_date__gte=start_date)
+        if 'end_date' in locals():
+            shipment_query = shipment_query.filter(shipped_date__lte=end_date)
+            shipments_needing_attention_query = shipments_needing_attention_query.filter(shipped_date__lte=end_date)
+
+    total_shipments = shipment_query.count()
+    shipments_needing_attention = shipments_needing_attention_query.count()
+
+    # Current Inventory Levels (quantity and cost per item or category)
+    breakdown_type = request.query_params.get('breakdown_type', 'item')  # 'item' or 'category'
+
+    # Should allow the user to view either by category or by item, instead of having to do this separately
+    if breakdown_type == 'category':
+        current_inventory_levels = (
+            Inventory.objects.values('category__name')
+            .annotate(
+                total_quantity=Sum('quantity'),
+                total_value=Sum(F('quantity') * F('cost'))
+            )
+            .order_by('category__name')
+        )
+    else:  # Default to breakdown by item
+        current_inventory_levels = (
+            Inventory.objects.values('name')
+            .annotate(
+                total_quantity=Sum('quantity'),
+                total_value=Sum(F('quantity') * F('cost'))
+            )
+            .order_by('name')
+        )
+
+    return Response({
+        "total_sales": total_sales,
+        "total_purchases": total_purchases,
+        "total_shipments": total_shipments,
+        "shipments_needing_attention": shipments_needing_attention,
+        "current_inventory_levels": current_inventory_levels,
+        "time_frame": time_frame,
+        "breakdown_type": breakdown_type,
+    })

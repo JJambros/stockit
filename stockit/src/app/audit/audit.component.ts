@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { MyDataService } from '../my-data.service';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+// import { HttpClientModule } from '@angular/common/http';
 @Component({
   selector: 'app-audit',
   standalone: true,
-  imports: [CommonModule, HttpClientModule],
+  imports: [CommonModule],
   templateUrl: './audit.component.html',
   styleUrls: ['./audit.component.css'],
   providers: [MyDataService]

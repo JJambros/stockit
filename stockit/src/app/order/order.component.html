@@ -13,18 +13,20 @@
                     <th>Tracking Number</th>
                     <th>Estimated Arrival</th>
                     <th>Shipping Company</th>
-                    <th>Order Status</th>
+                    <!-- <th>Order Status</th> -->
                 </tr>
             </thead>
             <tbody>
                 <tr class="table-light" *ngFor="let order of orders">
-                    <td>{{order.order_id}}</td>
+                    <td>{{order.order}}</td>
                     <td>{{order.tracking_number}}</td>
                     <td>{{order.est_delivery_date}}</td>
                     <td>{{order.shipping_company}}</td>
-                    <td>{{order.current_status}}</td>
+                    <!-- <td>{{order.current_status}}</td> -->
                 </tr>
-                <tr></tr>
+                <tr *ngIf="orders?.length === 0">
+                    <td>no orders available</td>
+                  </tr>
             </tbody>
         </table>
     </div>

@@ -6,15 +6,18 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './order.component.html',
-  styleUrl: './order.component.css'
+  styleUrls: ['./order.component.css']
 })
 export class OrderComponent implements OnInit {
   orders: any[] =[];
   constructor(private myDataService: MyDataService){}
 
   ngOnInit(): void {
-    this.myDataService.getData().subscribe(
-      (data) => (this.orders = data),
+    this.myDataService.getOrders().subscribe(
+      (data) => {
+        console.log('got data', data);
+        this.orders = Array.isArray(data) ? data : [];
+      }, 
       (error) => console.error('error fetching data', error)
     );
   }
