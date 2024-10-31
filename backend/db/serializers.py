@@ -153,11 +153,26 @@ class ShipmentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {'is_deleted': {'read_only': True}}
 
-# AuditTrail Serializer (If AuditTrail should not support soft deletion, omit 'is_deleted')
 class AuditTrailSerializer(serializers.ModelSerializer):
+    employee_name = serializers.SerializerMethodField()
+    formatted_date = serializers.SerializerMethodField()
+    formatted_time = serializers.SerializerMethodField()
+
+    def get_employee_name(self, obj):
+        # Access the Profile related to the changed_by user
+        return f"{obj.changed_by.first_name} {obj.changed_by.last_name}"
+
+    def get_formatted_date(self, obj):
+        # Format the date part of change_time
+        return obj.change_time.strftime("%Y-%m-%d")
+
+    def get_formatted_time(self, obj):
+        # Format the time part of change_time
+        return obj.change_time.strftime("%H:%M:%S")
+
     class Meta:
         model = AuditTrail
-        fields = '__all__'
+        fields = ['employee_name', 'formatted_date', 'formatted_time', 'changed_desc', 'content_type', 'object_id', 'is_deleted']
 
 # WorksOn Serializer
 class WorksOnSerializer(serializers.ModelSerializer):
