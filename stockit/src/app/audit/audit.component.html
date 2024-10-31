@@ -20,7 +20,7 @@
                 <td>{{trail.object_id}}</td>
                 <td>{{trail.changed_desc}}</td>
                 <td>{{trail.changed_by}}</td>
-                <td>{{trail.change_time}}</td>
+                <td>{{trail.change_time | date:'medium'}}</td>
               </tr>
               <tr *ngIf="auditTrails?.length === 0">
                 <td>no audit trails available</td>

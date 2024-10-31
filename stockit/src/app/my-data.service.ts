@@ -32,4 +32,12 @@ export class MyDataService {
     getInventory(): Observable<any>{
       return this.http.get(this.inventoryUrl);
     }
+    //update inventory
+    updateInventoryItem(item:any): Observable<any>{
+      return this.http.put(`${this.inventoryUrl}${item.inventory_id}/`, item);
+    }
+    //delete invetory
+    softDeleteItems(itemId: number): Observable<any>{
+      return this.http.delete(`${this.inventoryUrl}${itemId}/`);
+    }
 }
