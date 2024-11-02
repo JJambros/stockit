@@ -8,8 +8,8 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
-from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, CustomerOrder, Shipment, PurchaseOrder
-from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, OrderItemSerializer, ShipmentSerializer, PurchaseOrderSerializer
+from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, Customer, CustomerOrder, Shipment, PurchaseOrder, ForecastingPreferences, Supplier
+from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, OrderItemSerializer, ShipmentSerializer, PurchaseOrderSerializer, ForecastingPreferencesSerializer, SupplierSerializer, CustomerOrderSerializer
 from decimal import Decimal # Added because math is dumb (decimals and floats can't multiply)
 
 # Example of data view used for testing
@@ -229,6 +229,45 @@ def inventory_forecast(request, inventory_id, forecast_date):
         'restock_message': restock_message
     })
 
+# --------- FORECASTING PREFERENCES VIEWS  --------- #
+
+@api_view(['GET', 'POST'])
+def forecasting_preferences_list(request):
+    if request.method == 'GET':
+        preferences = ForecastingPreferences.objects.filter(is_deleted=False)
+        serializer = ForecastingPreferencesSerializer(preferences, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = ForecastingPreferencesSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def forecasting_preferences_detail(request, pk):
+    try:
+        preference = ForecastingPreferences.objects.get(pk=pk, is_deleted=False)
+    except ForecastingPreferences.DoesNotExist:
+        return Response({'error': 'Forecasting Preferences not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = ForecastingPreferencesSerializer(preference)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = ForecastingPreferencesSerializer(preference, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        preference.is_deleted = True
+        preference.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 # --------- AUDIT TRAIL VIEWS --------- #
 
@@ -247,6 +286,45 @@ def order_item_list(request):
     order_items = OrderItem.objects.filter(is_deleted=False)  # Exclude soft-deleted items
     serializer = OrderItemSerializer(order_items, many=True)
     return Response(serializer.data)
+
+
+# --------- CUSTOMER ORDER VIEWS --------- #
+@api_view(['GET', 'POST'])
+def customer_order_list(request):
+    if request.method == 'GET':
+        orders = CustomerOrder.objects.filter(is_deleted=False)
+        serializer = CustomerOrderSerializer(orders, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = CustomerOrderSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def customer_order_detail(request, pk):
+    try:
+        order = CustomerOrder.objects.get(pk=pk, is_deleted=False)
+    except CustomerOrder.DoesNotExist:
+        return Response({'error': 'Customer Order not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = CustomerOrderSerializer(order)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = CustomerOrderSerializer(order, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        order.is_deleted = True
+        order.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # --------- INDEX VIEWS --------- #
@@ -545,3 +623,43 @@ def dashboard_total_breakdown(request):
         "time_frame": time_frame,
         "breakdown_type": breakdown_type,
     })
+
+
+# --------- SUPPLIER VIEWS --------- #
+
+@api_view(['GET', 'POST'])
+def supplier_list(request):
+    if request.method == 'GET':
+        suppliers = Supplier.objects.filter(is_deleted=False)
+        serializer = SupplierSerializer(suppliers, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = SupplierSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def supplier_detail(request, pk):
+    try:
+        supplier = Supplier.objects.get(pk=pk, is_deleted=False)
+    except Supplier.DoesNotExist:
+        return Response({'error': 'Supplier not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = SupplierSerializer(supplier)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = SupplierSerializer(supplier, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        supplier.is_deleted = True
+        supplier.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
