@@ -13,6 +13,7 @@ export class MyDataService {
   private inventoryUrl = 'http://localhost:8000/api/inventory/';
   private dashboardOrders = 'http://localhost:8000/api/dashboard/total-orders/';
   private dashboardNetSales = 'http://localhost:8000/api/dashboard/net-sales/';
+  private orderItemsUrl = 'http://localhost:8000/api/order-items/';
   constructor(private http: HttpClient) { }
 
     getData(): Observable<any> {
@@ -49,5 +50,9 @@ export class MyDataService {
 
     getDashboardNetSales(params: string): Observable<any> {
       return this.http.get(this.dashboardNetSales, { params: { time_frame: params } });
+    }
+
+    getOrderSummary() :Observable<any>{
+      return this.http.get(this.orderItemsUrl);
     }
 }

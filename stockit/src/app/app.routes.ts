@@ -8,6 +8,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { InventoryComponent } from './inventory/inventory.component';
 import { AuditComponent } from './audit/audit.component';
 import { OrderComponent } from './order/order.component';
+import { OrdersSummayComponent } from './orders-summay/orders-summay.component';
 
 export const routes: Routes = [
     {
@@ -26,7 +27,8 @@ export const routes: Routes = [
           { path: 'profile', component: ProfileComponent },
           { path : 'audit', component: AuditComponent},
           { path: 'profile', component: ProfileComponent},
-          { path: 'order', component: OrderComponent}
+          { path: 'order', component: OrderComponent},
+          {path: 'orders-summary', component: OrdersSummayComponent}
         ]
       },
       { path: '**', redirectTo: 'login' }  // Redirect to login if unknown route

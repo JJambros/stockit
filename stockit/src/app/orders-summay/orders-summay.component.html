@@ -1,0 +1,30 @@
+<div class="search-container" style="padding-left: 150px;padding-right: 150px;">
+    <input type="text"  class="search-input" name="search-bar" placeholder="Search..." [(ngModel)]="searchText">
+    <button class="btn btn-light search-btn" type="button"> 
+        <!-- <i class="fa fa-search"></i> -->
+    </button>
+</div>
+<div class="table-responsive" style="padding-left: 150px;padding-right: 150px;">
+    <table id="myTable" class="table">
+        <thead>
+            <tr class="table-primary">
+              <th>Order Item Id</th>
+              <th>Quantity</th>
+              <th>Order?</th>
+              <th>Inventory?</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="table-light" *ngFor="let orders of orderSummary">
+              <td>{{orders.order_item_id}}</td>
+              <td>{{orders.quantity}}</td>
+              <td>{{orders.order}}</td>
+              <td>{{orders.inventory}}</td>
+            </tr>
+            <tr *ngIf="orderSummary.length === 0">
+              <td> order summary unavailable</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
