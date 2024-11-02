@@ -355,7 +355,7 @@ def dashboard_net_sales(request):
 @api_view(['GET'])
 def dashboard_total_orders(request):
     # Get the time frame from request parameters
-    time_frame = request.query_params.get('time_frame', '24h')
+    time_frame = request.query_params.get('time_frame')
 
     # Determine the date range based on the time frame
     if time_frame == '24h':
