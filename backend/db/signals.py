@@ -71,12 +71,27 @@ def decrease_inventory_on_order(sender, instance, created, **kwargs):
 def increase_inventory_on_purchase(sender, instance, created, **kwargs):
     if created and not instance.inventory.is_deleted:  # Only increase if a new PurchaseOrder is created and not soft-deleted
         inventory_item = instance.inventory
-        
+
         # Increase the quantity only once
         if not hasattr(inventory_item, '_quantity_updated'):
             inventory_item.quantity += instance.order_quantity
             inventory_item.save(update_fields=['quantity'])
             inventory_item._quantity_updated = True  # Mark as updated to prevent multiple saves
+
+@receiver(post_save, sender=Inventory)
+def check_inventory_levels(sender, instance, **kwargs):
+    if instance.quantity <= instance.low_inventory_threshold:
+        # Send a low inventory alert to admins
+        send_mail(
+            'Low Inventory Alert',
+            f'The inventory for {instance.name} is below the threshold.',
+            'from@example.com',
+            ['admin@example.com'],
+            fail_silently=False,
+        )
+    if instance.quantity <= instance.problem_par:
+        # Notify critical status
+        print(f'Critical Inventory Alert: {instance.name} is at problem par level.')
 
 @receiver(post_save, sender=Inventory)
 def auto_generate_order(sender, instance, **kwargs):

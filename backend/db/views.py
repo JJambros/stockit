@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework import status
+from django.db.models import Q
 from rest_framework.authtoken.models import Token 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
@@ -110,7 +111,28 @@ def inventory_detail(request, pk):
         inventory.is_deleted = True
         inventory.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+def inventory_list(request):
+    category = request.GET.get('category')
+    min_amount = request.GET.get('min_amount')
+    max_amount = request.GET.get('max_amount')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
 
+    filters = Q()
+    if category:
+        filters &= Q(category=category)
+    if min_amount:
+        filters &= Q(quantity__gte=min_amount)
+    if max_amount:
+        filters &= Q(quantity__lte=max_amount)
+    if start_date and end_date:
+        filters &= Q(created_at__range=[start_date, end_date])
+
+    inventory = Inventory.objects.filter(filters)
+    # Serialize and return response
+    serializer = InventorySerializer(inventory, many=True)
+    return JsonResponse(serializer.data, safe=False)
 
 # --------- DASHBOARD VIEWS --------- #
 
