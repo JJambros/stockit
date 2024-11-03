@@ -30,15 +30,15 @@
 <div class="container-fluid">
     <div class="row">
         <div class="col-12 col-sm-6 col-md-6">
-            <p style="text-align: center;">Maybe a nice search bar or something</p>
+            <div class="search-container" style="padding-left: 150px;padding-right: 150px;"><input type="text" class="search-input" name="search-bar" placeholder="Search..."><button class="btn btn-light search-btn" type="button"> <i class="fa fa-search"></i></button></div>
         </div>
-        <div class="col-12 col-sm-6 col-md-6 text-end" style="margin-bottom: 30px;"><a class="btn btn-primary" role="button"><i class="fa fa-plus"></i>&nbsp;Add Thing</a></div>
+        <div class="col-12 col-sm-6 col-md-6 text-end" style="margin-bottom: 30px;"><a class="btn btn-primary" role="button"><i class="fa fa-plus"></i>&nbsp;Add Inventory</a></div>
     </div>
     <div class="card" id="TableSorterCard">
         <div class="card-header py-3">
             <div class="row table-topper align-items-center">
                 <div class="col-12 col-sm-5 col-md-6 text-start" style="margin: 0px;padding: 5px 15px;">
-                    <p class="text-primary m-0 fw-bold">List of Things</p>
+                    <p class="text-primary m-0 fw-bold">List of Inventory</p>
                 </div>
                 <div class="col-12 col-sm-7 col-md-6 text-end" style="margin: 0px;padding: 5px 15px;"><button class="btn btn-primary btn-sm reset" type="button" style="margin: 2px;">Add Filter</button><button class="btn btn-warning btn-sm" id="zoom_in" type="button" zoomclick="ChangeZoomLevel(-10);" style="margin: 2px;"><i class="fa fa-search-plus"></i></button><button class="btn btn-warning btn-sm" id="zoom_out" type="button" zoomclick="ChangeZoomLevel(-10);" style="margin: 2px;"><i class="fa fa-search-minus"></i></button></div>
             </div>
