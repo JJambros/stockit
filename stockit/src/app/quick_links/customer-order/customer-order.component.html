@@ -1,0 +1,27 @@
+<link rel="stylesheet" href="css/Search-Field-With-Icon.css">
+<div class="search-container" style="padding-left: 150px;padding-right: 150px;"><input type="text" class="search-input" name="search-bar" placeholder="Search..."><button class="btn btn-light search-btn" type="button"> <i class="fa fa-search"></i></button></div>
+<div class="table-responsive" style="padding-left: 150px;padding-right: 150px;">
+    <table datatable class="table">
+        <thead>
+            <tr class="table-primary">
+              <th>Customer</th>
+              <th>To Company?</th>
+              <th>Status</th>
+              <th>Ordered Date</th>
+              <th>Shipped</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="table-light" *ngFor="let cOrders of customerOrders">
+              <td>{{cOrders.from_company}}</td>
+              <td>{{cOrders.to_company}}</td>
+              <td>{{cOrders.status}}</td>
+              <td>{{cOrders.customer_order_date}}</td>
+              <td>{{cOrders.shipped}}</td>
+            </tr>
+            <tr *ngIf="customerOrders?.length === 0">
+              <td>no customer orders available</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

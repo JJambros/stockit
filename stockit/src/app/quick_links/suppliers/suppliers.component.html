@@ -1,0 +1,27 @@
+<link rel="stylesheet" href="css/Search-Field-With-Icon.css">
+
+<div class="search-container" style="padding-left: 150px;padding-right: 150px;"><input type="text" class="search-input" name="search-bar" placeholder="Search..."><button class="btn btn-light search-btn" type="button"> <i class="fa fa-search"></i></button></div>
+<div class="table-responsive" style="padding-left: 150px;padding-right: 150px;">
+    <button type="button" class="btn btn-primary btn-lg btn-block">Add Supplier</button>
+    <table class="table">
+        <thead>
+            <tr class="table-primary">
+                <th>Supplier ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr class="table-light" *ngFor="let supplier of suppliersList">
+                <td>{{supplier.supplier_id}}</td>
+                <td>{{supplier.supplier_name}}</td>
+                <td>{{supplier.contact_email}}</td>
+                <td>{{supplier.contact_phone}}</td>
+            </tr>
+            <tr *ngIf="suppliersList?.length === 0">
+                <td>no orders available</td>
+              </tr>
+        </tbody>
+    </table>
+</div>

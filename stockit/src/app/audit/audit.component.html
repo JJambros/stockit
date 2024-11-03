@@ -13,14 +13,16 @@
                 <th>Description</th>
                 <th>Employee Name</th>
                 <th>Time</th>
+                <th>Date</th>
               </tr>
           </thead>
           <tbody>
               <tr class="table-light" *ngFor="let trail of auditTrails">
                 <td>{{trail.object_id}}</td>
                 <td>{{trail.changed_desc}}</td>
-                <td>{{trail.changed_by}}</td>
-                <td>{{trail.change_time}}</td>
+                <td>{{trail.employee_name}}</td>
+                <td>{{trail.formatted_time}}</td>
+                <td>{{trail.formatted_date}}</td>
               </tr>
               <tr *ngIf="auditTrails?.length === 0">
                 <td>no audit trails available</td>

@@ -17,8 +17,8 @@ export class AuditComponent implements OnInit {
   ngOnInit(): void {
     this.myDataService.getAudit().subscribe(
       (data) => {
-        console.log('got data', data);
-        //this.auditTrails =data;
+        //console data vals
+       // console.log('got data', data);
          this.auditTrails = Array.isArray(data) ? data : [];
       },
       (error) => console.error('error fetching AUDIT data', error)
