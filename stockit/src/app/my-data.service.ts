@@ -13,6 +13,8 @@ export class MyDataService {
   private inventoryUrl = 'http://localhost:8000/api/inventory/';
   private dashboardOrders = 'http://localhost:8000/api/dashboard/total-orders/';
   private dashboardNetSales = 'http://localhost:8000/api/dashboard/net-sales/';
+  private dashboardCategorySort = 'http://localhost:8000/api/dashboard/net-purchases-by-category/';
+  private dashboardItemSort = 'http://localhost:8000/api/dashboard/net-purchases-by-item/';
   private orderItemsUrl = 'http://localhost:8000/api/order-items/';
   private customerOrderUrl = 'http://localhost:8000/api/customer-orders/';
   private suppliersUrl = 'http://localhost:8000/api/suppliers/';
@@ -52,6 +54,14 @@ export class MyDataService {
 
     getDashboardNetSales(params: string): Observable<any> {
       return this.http.get(this.dashboardNetSales, { params: { time_frame: params } });
+    }
+
+    getNetPurchasesByCategory(params: string): Observable<any> {
+      return this.http.get(this.dashboardCategorySort, { params: { time_frame: params } });
+    }
+
+    getNetPurchasesByItem(params: string): Observable<any> {
+      return this.http.get(this.dashboardItemSort, { params: { time_frame: params } });
     }
 
     getOrderSummary() :Observable<any>{
