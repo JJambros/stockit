@@ -53,38 +53,28 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Cell 1</td>
-                                    <td>Cell 2</td>
-                                </tr>
-                                <tr>
-                                    <td>Cell 3</td>
-                                    <td>Cell 4</td>
-                                </tr>
-                                <tr>
-                                    <td>Cell 1</td>
-                                    <td>Cell 2</td>
-                                </tr>
-                                <tr>
-                                    <td>Cell 1</td>
-                                    <td>Cell 2</td>
-                                </tr>
-                                <tr>
-                                    <td>Cell 1</td>
-                                    <td>Cell 2</td>
+                                <tr *ngFor="let row of paginatedRowsByCategory">
+                                    <td>{{ row.type }}</td>
+                                    <td>{{ row.amount }}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                     <nav>
                         <ul class="pagination">
-                            <li class="page-item"><a class="page-link" aria-label="Previous" href="#"><span aria-hidden="true">«</span></a></li>
-                            <li class="page-item"><a class="page-link" href="#">1</a></li>
-                            <li class="page-item"><a class="page-link" href="#">2</a></li>
-                            <li class="page-item"><a class="page-link" href="#">3</a></li>
-                            <li class="page-item"><a class="page-link" href="#">4</a></li>
-                            <li class="page-item"><a class="page-link" href="#">5</a></li>
-                            <li class="page-item"><a class="page-link" aria-label="Next" href="#"><span aria-hidden="true">»</span></a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="javascript:void(0)" aria-label="Previous" (click)="changePageCategory(currentPageCategory - 1)">
+                                    <span aria-hidden="true">«</span>
+                                </a>
+                            </li>                        
+                            <li *ngFor="let page of totalPagesArrayCategory" class="page-item" [class.active]="page === currentPageCategory">
+                                <a class="page-link" href="javascript:void(0)" (click)="changePageCategory(page)">{{ page }}</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="javascript:void(0)" aria-label="Next" (click)="changePageCategory(currentPageCategory + 1)">
+                                    <span aria-hidden="true">»</span>
+                                </a>
+                            </li>                        
                         </ul>
                     </nav>
                 </div>
@@ -103,38 +93,28 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>Cell 1</td>
-                                    <td>Cell 2</td>
-                                </tr>
-                                <tr>
-                                    <td>Cell 3</td>
-                                    <td>Cell 4</td>
-                                </tr>
-                                <tr>
-                                    <td>Cell 1</td>
-                                    <td>Cell 2</td>
-                                </tr>
-                                <tr>
-                                    <td>Cell 1</td>
-                                    <td>Cell 2</td>
-                                </tr>
-                                <tr>
-                                    <td>Cell 1</td>
-                                    <td>Cell 2</td>
+                                <tr *ngFor="let row of paginatedRowsByItem">
+                                    <td>{{ row.type }}</td>
+                                    <td>{{ row.amount }}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                     <nav>
                         <ul class="pagination">
-                            <li class="page-item"><a class="page-link" aria-label="Previous" href="#"><span aria-hidden="true">«</span></a></li>
-                            <li class="page-item"><a class="page-link" href="#">1</a></li>
-                            <li class="page-item"><a class="page-link" href="#">2</a></li>
-                            <li class="page-item"><a class="page-link" href="#">3</a></li>
-                            <li class="page-item"><a class="page-link" href="#">4</a></li>
-                            <li class="page-item"><a class="page-link" href="#">5</a></li>
-                            <li class="page-item"><a class="page-link" aria-label="Next" href="#"><span aria-hidden="true">»</span></a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="javascript:void(0)" aria-label="Previous" (click)="changePageItem(currentPageItem - 1)">
+                                    <span aria-hidden="true">«</span>
+                                </a>
+                            </li>                        
+                            <li *ngFor="let page of totalPagesArrayItem" class="page-item" [class.active]="page === currentPageItem">
+                                <a class="page-link" href="javascript:void(0)" (click)="changePageItem(page)">{{ page }}</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="javascript:void(0)" aria-label="Next" (click)="changePageItem(currentPageItem + 1)">
+                                    <span aria-hidden="true">»</span>
+                                </a>
+                            </li>                        
                         </ul>
                     </nav>
                 </div>
