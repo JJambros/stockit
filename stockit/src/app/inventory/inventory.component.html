@@ -32,7 +32,58 @@
         <div class="col-12 col-sm-6 col-md-6">
             <div class="search-container" style="padding-left: 150px;padding-right: 150px;"><input type="text" class="search-input" name="search-bar" placeholder="Search..."><button class="btn btn-light search-btn" type="button"> <i class="fa fa-search"></i></button></div>
         </div>
-        <div class="col-12 col-sm-6 col-md-6 text-end" style="margin-bottom: 30px;"><a class="btn btn-primary" role="button"><i class="fa fa-plus"></i>&nbsp;Add Inventory</a></div>
+        <!-- (click)="showInvenoryForm = !showInvenoryForm" -->
+        <div class="col-12 col-sm-6 col-md-6 text-end" style="margin-bottom: 30px;"><a class="btn btn-primary" role="button" ><i class="fa fa-plus"></i>&nbsp;Add Inventory</a></div>
+<!-- //*ngIf="showInvenoryForm" -->
+        <div >
+            <form>
+                <div class="form-row">
+                  <div class="form-group col-md-6">
+                    <label for="inputEmail4">Email</label>
+                    <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+                  </div>
+                  <div class="form-group col-md-6">
+                    <label for="inputPassword4">Password</label>
+                    <input type="password" class="form-control" id="inputPassword4" placeholder="Password">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="inputAddress">Address</label>
+                  <input type="text" class="form-control" id="inputAddress" placeholder="1234 Main St">
+                </div>
+                <div class="form-group">
+                  <label for="inputAddress2">Address 2</label>
+                  <input type="text" class="form-control" id="inputAddress2" placeholder="Apartment, studio, or floor">
+                </div>
+                <div class="form-row">
+                  <div class="form-group col-md-6">
+                    <label for="inputCity">City</label>
+                    <input type="text" class="form-control" id="inputCity">
+                  </div>
+                  <div class="form-group col-md-4">
+                    <label for="inputState">State</label>
+                    <select id="inputState" class="form-control">
+                      <option selected>Choose...</option>
+                      <option>...</option>
+                    </select>
+                  </div>
+                  <div class="form-group col-md-2">
+                    <label for="inputZip">Zip</label>
+                    <input type="text" class="form-control" id="inputZip">
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="gridCheck">
+                    <label class="form-check-label" for="gridCheck">
+                      Check me out
+                    </label>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Sign in</button>
+              </form>
+        </div>
+
     </div>
     <div class="card" id="TableSorterCard">
         <div class="card-header py-3">
@@ -51,8 +102,10 @@
                             <tr>
                                 <th class="text-center">ID</th>
                                 <th class="text-center">Item Name</th>
+                                <th class="text-center">Category</th>
                                 <th class="text-center">Forecast Level</th>
                                 <th class="text-center">Quantity</th>
+                                <th class="text-center">Price</th>
                                 <th class="text-center filter-false sorter-false">Actions</th>
                             </tr>
                         </thead>
@@ -60,8 +113,10 @@
                             <tr *ngFor="let item of inventoryList">
                                 <td>{{item.inventory_id}}</td>
                                 <td>{{item.name}}</td>
+                                <td>{{item.category}}</td>
                                 <td>{{item.forecast_level}}</td>
                                 <td>{{item.quantity}}</td>
+                                <td class="text-right">{{item.price}}</td>
                                 <td class="text-center align-middle" style="max-height: 60px;height: 60px;">
                                     <button class="btn btnMaterial btn-flat success semicircle" (click)="edit(item)">
                                         <i class="fas fa-pen"></i>
