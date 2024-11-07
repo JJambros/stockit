@@ -8,8 +8,8 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token 
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
-from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, Customer, CustomerOrder, Shipment, PurchaseOrder, ForecastingPreferences, Supplier
-from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, OrderItemSerializer, ShipmentSerializer, PurchaseOrderSerializer, ForecastingPreferencesSerializer, SupplierSerializer, CustomerOrderSerializer
+from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, Customer, CustomerOrder, Shipment, PurchaseOrder, ForecastingPreferences, Supplier, Category
+from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, OrderItemSerializer, ShipmentSerializer, PurchaseOrderSerializer, ForecastingPreferencesSerializer, SupplierSerializer, CustomerOrderSerializer, CustomerSerializer, CategorySerializer
 from decimal import Decimal # Added because math is dumb (decimals and floats can't multiply)
 
 # Example of data view used for testing
@@ -112,6 +112,92 @@ def inventory_detail(request, pk):
         inventory.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+# --------- CATEGORY VIEWS --------- #
+
+# List all categories or create a new one
+@api_view(['GET', 'POST'])
+def category_list(request):
+    if request.method == 'GET':
+        # Retrieve all categories excluding soft-deleted ones
+        categories = Category.objects.filter(is_deleted=False)
+        serializer = CategorySerializer(categories, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        # Create a new category
+        serializer = CategorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Retrieve, update, or delete a specific category
+@api_view(['GET', 'PUT', 'DELETE'])
+def category_detail(request, pk):
+    try:
+        category = Category.objects.get(pk=pk, is_deleted=False)
+    except Category.DoesNotExist:
+        return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = CategorySerializer(category)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = CategorySerializer(category, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        # Soft delete the category
+        category.is_deleted = True
+        category.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# --------- SEARCH BAR VIEWS --------- #
+
+@api_view(['GET'])
+def search_view(request):
+    query = request.query_params.get('q', '')
+
+    # Initialize empty result lists for each model
+    profile_results = []
+    inventory_results = []
+    order_results = []
+
+    if query:
+        # Search Profiles
+        profiles = Profile.objects.filter(
+            Q(Fname__icontains=query) | Q(Lname__icontains=query) | Q(email__icontains=query),
+            is_deleted=False
+        )
+        profile_results = ProfileSerializer(profiles, many=True).data
+
+        # Search Inventory
+        inventory_items = Inventory.objects.filter(
+            Q(name__icontains=query) | Q(category__name__icontains=query),
+            is_deleted=False
+        )
+        inventory_results = InventorySerializer(inventory_items, many=True).data
+
+        # Search Customer Orders
+        orders = CustomerOrder.objects.filter(
+            Q(from_company__icontains=query) | Q(to_company__icontains=query),
+            is_deleted=False
+        )
+        order_results = CustomerOrderSerializer(orders, many=True).data
+
+    # Combine results
+    results = {
+        'profiles' : profile_results,
+        'inventory' : inventory_results,
+        'orders' : order_results,
+    }
+
+    return Response(results)
 
 # --------- DASHBOARD VIEWS --------- #
 

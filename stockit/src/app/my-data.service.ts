@@ -18,6 +18,8 @@ export class MyDataService {
   private orderItemsUrl = 'http://localhost:8000/api/order-items/';
   private customerOrderUrl = 'http://localhost:8000/api/customer-orders/';
   private suppliersUrl = 'http://localhost:8000/api/suppliers/';
+  private categoriesUrl = 'http://localhost:8000/api/categories/';
+  //
   constructor(private http: HttpClient) { }
 
     getData(): Observable<any> {
@@ -42,6 +44,12 @@ export class MyDataService {
     //update inventory
     updateInventoryItem(item:any): Observable<any>{
       return this.http.put(`${this.inventoryUrl}${item.inventory_id}/`, item);
+    }
+    getCategories(): Observable<any>{
+      return this.http.get(this.categoriesUrl);
+    }
+    addInventoryItem(item:any): Observable<any>{
+      return this.http.post(this.inventoryUrl, item);
     }
     //delete invetory
     softDeleteItems(itemId: number): Observable<any>{

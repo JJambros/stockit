@@ -32,58 +32,45 @@
         <div class="col-12 col-sm-6 col-md-6">
             <div class="search-container" style="padding-left: 150px;padding-right: 150px;"><input type="text" class="search-input" name="search-bar" placeholder="Search..."><button class="btn btn-light search-btn" type="button"> <i class="fa fa-search"></i></button></div>
         </div>
-        <!-- (click)="showInvenoryForm = !showInvenoryForm" -->
-        <div class="col-12 col-sm-6 col-md-6 text-end" style="margin-bottom: 30px;"><a class="btn btn-primary" role="button" ><i class="fa fa-plus"></i>&nbsp;Add Inventory</a></div>
-<!-- //*ngIf="showInvenoryForm" -->
-        <div >
-            <form>
+        
+        <div class="col-12 col-sm-6 col-md-6 text-end" style="margin-bottom: 30px;"><a class="btn btn-primary" role="button" (click)="showInvenoryForm = !showInvenoryForm"><i class="fa fa-plus"></i>&nbsp;Add Inventory</a></div>
+
+        <div *ngIf="showInvenoryForm" class="card">
+            <form (ngSubmit)="addInventory()">
                 <div class="form-row">
                   <div class="form-group col-md-6">
-                    <label for="inputEmail4">Email</label>
-                    <input type="email" class="form-control" id="inputEmail4" placeholder="Email">
+                    <label for="itemName">Name</label>
+                    <input type="text" class="form-control" id="itemName" [(ngModel)]="newItem.name" name="name" required>
                   </div>
                   <div class="form-group col-md-6">
-                    <label for="inputPassword4">Password</label>
-                    <input type="password" class="form-control" id="inputPassword4" placeholder="Password">
+                    <label for="itemCost">Cost</label>
+                    <input type="number" class="form-control" id="itemCost" [(ngModel)]="newItem.cost" name="cost" required>
                   </div>
                 </div>
-                <div class="form-group">
-                  <label for="inputAddress">Address</label>
-                  <input type="text" class="form-control" id="inputAddress" placeholder="1234 Main St">
+                <div class="form-group col-md-6">
+                    <label for="itemPrice">Sell Price</label>
+                    <input type="number" class="form-control" id="itemPrice" [(ngModel)]="newItem.price" name="price" required>
                 </div>
-                <div class="form-group">
-                  <label for="inputAddress2">Address 2</label>
-                  <input type="text" class="form-control" id="inputAddress2" placeholder="Apartment, studio, or floor">
-                </div>
-                <div class="form-row">
+                <div class="form-group col-md-6">
+                    <label for="itemQuantity">Quantity</label>
+                    <input type="number" class="form-control" id="itemQuantity" [(ngModel)]="newItem.quantity" name="quantity">
+                  </div>
                   <div class="form-group col-md-6">
-                    <label for="inputCity">City</label>
-                    <input type="text" class="form-control" id="inputCity">
+                    <label for="itemForecast">Forecast Level</label>
+                    <input type="number" class="form-control" id="itemForecast" [(ngModel)]="newItem.forecast_level" name="forecast_level">
                   </div>
-                  <div class="form-group col-md-4">
-                    <label for="inputState">State</label>
-                    <select id="inputState" class="form-control">
-                      <option selected>Choose...</option>
-                      <option>...</option>
+                  <div class="form-group col-md-6">
+                    <label for="itemCategory">Category</label>
+                    <select class="form-control" name="category" id="itemCategory" [(ngModel)]="newItem.category" name="category" required>
+                        <option *ngFor="let category of categories" [value]="category.id"> {{category.name}}</option>
                     </select>
-                  </div>
-                  <div class="form-group col-md-2">
-                    <label for="inputZip">Zip</label>
-                    <input type="text" class="form-control" id="inputZip">
-                  </div>
-                </div>
+                  </div> 
+                <!-- </div> -->
                 <div class="form-group">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="gridCheck">
-                    <label class="form-check-label" for="gridCheck">
-                      Check me out
-                    </label>
-                  </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Sign in</button>
+                <button type="submit" class="btn btn-primary">Add Inventory</button>
               </form>
         </div>
-
     </div>
     <div class="card" id="TableSorterCard">
         <div class="card-header py-3">
@@ -105,7 +92,6 @@
                                 <th class="text-center">Category</th>
                                 <th class="text-center">Forecast Level</th>
                                 <th class="text-center">Quantity</th>
-                                <th class="text-center">Price</th>
                                 <th class="text-center filter-false sorter-false">Actions</th>
                             </tr>
                         </thead>
@@ -116,7 +102,6 @@
                                 <td>{{item.category}}</td>
                                 <td>{{item.forecast_level}}</td>
                                 <td>{{item.quantity}}</td>
-                                <td class="text-right">{{item.price}}</td>
                                 <td class="text-center align-middle" style="max-height: 60px;height: 60px;">
                                     <button class="btn btnMaterial btn-flat success semicircle" (click)="edit(item)">
                                         <i class="fas fa-pen"></i>
