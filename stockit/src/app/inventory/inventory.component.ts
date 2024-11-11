@@ -19,11 +19,11 @@ export class InventoryComponent implements OnInit  {
  //form values
  newItem={
   name:'',
-  cost: 0,
-  price:0,
-  quantity:0,
-  category:null,
-  forecast_level:0,
+  cost: '',
+  price: '',
+  quantity:'',
+  category:'',
+  forecast_level:'',
  };
  constructor(private myDataService: MyDataService){}
 
@@ -41,16 +41,16 @@ export class InventoryComponent implements OnInit  {
    );
  }
 
- apiCategories(): void{
-  this.myDataService.getCategories().subscribe(
-    (data) => {
-      //console to see items.______
-      console.log('got categoies data', data);
-      this.categories = Array.isArray(data) ? data : [];
-    },
-    (error) => console.error('error fetching categories data', error)
-   );
- }
+//  apiCategories(): void{
+//   this.myDataService.getCategories().subscribe(
+//     (data) => {
+//       //console to see items.______
+//       console.log('got categoies data', data);
+//       this.categories = Array.isArray(data) ? data : [];
+//     },
+//     (error) => console.error('error fetching categories data', error)
+//    );
+//  }
 
 //add form
 addInventory(): void{
