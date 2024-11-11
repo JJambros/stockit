@@ -118,6 +118,11 @@ def inventory_detail(request, pk):
         inventory.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @api_view(['GET', 'POST'])
+    def inventory_history_view(request):
+        history_items = InventoryHistory.objects.all().order_by('-transaction_date')
+        return render(request, 'inventory_history.html', {'history_items': history_items})
+
 
 # --------- DASHBOARD VIEWS --------- #
 

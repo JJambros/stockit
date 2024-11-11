@@ -83,4 +83,8 @@ export class MyDataService {
     getSuppliers():Observable<any>{
       return this.http.get(this.suppliersUrl);
     }
+
+    addSupplier(supplier: any): Observable<any>{
+      return this.http.post(this.suppliersUrl, supplier);
+    }
 }
