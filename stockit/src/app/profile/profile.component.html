@@ -1,0 +1,71 @@
+
+<link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="assets/css/Ludens-Users---3-Profile.css">
+<link rel="stylesheet" href="assets/css/Navbar-Right-Links-icons.css">
+<link rel="stylesheet" href="assets/css/Pretty-Search-Form-.css">
+<link rel="stylesheet" href="assets/css/Table-with-search-table.css">
+<link rel="stylesheet" href="assets/css/Table-with-search.css">
+
+
+
+<div></div>
+<main class="page" style="min-height: 100%;">
+    <section class="clean-block about-us">
+        <div class="row" style="margin-right: 0px;margin-left: 0px;">
+            <div class="col text-center">
+                <h1 class="text-info" style="color: var(--bs-link-hover-color);">Profile</h1>
+            </div>
+        </div>
+        <div class="row justify-content-center" style="margin-right: 0px;margin-left: 0px;">
+            <div class="col-sm-6 col-lg-4" style="padding-right: 0px;padding-left: 0px;">
+                <div class="card clean-card text-center">
+                    <div class="card-body info">
+                        <div class="row" style="margin-top: -24px;">
+                            <div class="col-md-12" style="margin-top: 22px;">
+                                <div class="row">
+                                    <div class="col">
+                                        <p class="labels"><strong>Name</strong></p>
+                                    </div>
+                                    <div class="col">
+                                        <p class="labels">{{profile.Fname}} {{profile.Lname}}</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <p class="labels"><strong>Username</strong></p>
+                                    </div>
+                                    <div class="col">
+                                        <p class="labels">{{profile.user}}</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <p class="labels"><strong>Phone Number</strong></p>
+                                    </div>
+                                    <div class="col">
+                                        <p class="labels">{{profile.phone_number}}</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <p class="labels"><strong>Email</strong></p>
+                                    </div>
+                                    <div class="col">
+                                        <p class="labels">{{profile.email}}</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12"><a class="btn btn-success" role="button" (click)="logout()" style="--bs-body-bg: var(--bs-link-color);background: rgb(60,79,179);"><strong>Logout</strong></a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+<script src="assets/bootstrap/js/bootstrap.min.js"></script>
+<script src="assets/js/Table-with-search-table.js"></script>
+
+

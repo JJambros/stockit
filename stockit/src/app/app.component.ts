@@ -17,14 +17,14 @@ export class AppComponent implements OnInit {
   constructor(private myDataService: MyDataService) {}
 
   ngOnInit(): void {
-    this.myDataService.getData().subscribe(
+/*     this.myDataService.getData().subscribe(
       (data) => {
         this.message = data.message;
       },
       (error) => {
         console.error('Error fetching data:', error);
       }
-    );
+    ); */
   }
 
 }

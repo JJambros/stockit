@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from .views import my_data
+from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls), # Admin panel
