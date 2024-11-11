@@ -51,7 +51,6 @@ class Inventory(models.Model):
     quantity = models.IntegerField()
     forecast_level = models.IntegerField()
     low_inventory_threshold = models.IntegerField(default=10)  # Adjust the default as needed
-    problem_par = models.IntegerField(default=5)  # Inventory level indicating critical status
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):

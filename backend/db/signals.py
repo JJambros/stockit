@@ -89,10 +89,6 @@ def check_inventory_levels(sender, instance, **kwargs):
             ['admin@example.com'],
             fail_silently=False,
         )
-    if instance.quantity <= instance.problem_par:
-        # Notify critical status
-        print(f'Critical Inventory Alert: {instance.name} is at problem par level.')
-
 @receiver(post_save, sender=Inventory)
 def auto_generate_order(sender, instance, **kwargs):
     try:
