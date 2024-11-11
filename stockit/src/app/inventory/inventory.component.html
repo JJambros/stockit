@@ -6,8 +6,24 @@
                     <div class="card-header" style="box-shadow: 0px 0px 5px var(--bs-secondary-color);">
                         <h5 class="mb-0">Low Inventory Alerts</h5>
                     </div>
+
                     <div class="card-body" style="border-width: 0px;box-shadow: 0px 0px 5px var(--bs-secondary-color);">
-                        <p class="card-text" style="border-right-width: 1px;">Quick action links here.<br><br><span style="font-weight: normal !important; font-style: normal !important;">Make this a table with a button.</span><br><br><br></p>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th style="padding-right: 64px;">Item</th>
+                                    <th style="text-align: right;">Threshold</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *ngFor="let item of inventoryList">
+                                    <tr *ngIf="item.quantity < item.forecast_level">
+                                        <td>{{ item.name }}</td>
+                                        <td style="text-align: right;"><button class="btn btn-primary btn-sm" (click)="edit(item)">Edit</button></td>  
+                                    </tr>
+                                </ng-container>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

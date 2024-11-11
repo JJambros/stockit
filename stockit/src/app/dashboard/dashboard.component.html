@@ -55,7 +55,7 @@
                             <tbody>
                                 <tr *ngFor="let row of paginatedRowsByCategory">
                                     <td>{{ row.type }}</td>
-                                    <td>{{ row.amount }}</td>
+                                    <td style="text-align: right;">{{ row.amount }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -88,14 +88,14 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th style="padding-right: 64px;">Type</th>
+                                    <th style="padding-right: 64px;">Item</th>
                                     <th>Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr *ngFor="let row of paginatedRowsByItem">
                                     <td>{{ row.type }}</td>
-                                    <td>{{ row.amount }}</td>
+                                    <td style="text-align: right;">{{ row.amount }}</td>
                                 </tr>
                             </tbody>
                         </table>
