@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    'db', # for models 
+    'db', # for models
+    'django_seed',
 ]
 
 MIDDLEWARE = [
