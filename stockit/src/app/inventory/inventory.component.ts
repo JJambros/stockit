@@ -3,23 +3,33 @@ import { HttpClient } from '@angular/common/http';
 import { MyDataService } from '../my-data.service';
 import { CommonModule } from '@angular/common';
 import { error } from 'console';
+import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './inventory.component.html',
   styleUrls: ['./inventory.component.css'],
   providers: [MyDataService]
 })
 export class InventoryComponent implements OnInit  {
  inventoryList: any[] =[];
-
+ categories: any[] =[];
+ showInvenoryForm: boolean = false; //default doesn't display form
+ //form values
+ newItem={
+  name:'',
+  cost: 0,
+  price:0,
+  quantity:0,
+  category:null,
+  forecast_level:0,
+ };
  constructor(private myDataService: MyDataService){}
 
  ngOnInit(): void {
   this.apiInventory();
  }
-
  apiInventory(): void{
   this.myDataService.getInventory().subscribe(
     (data) => {
@@ -31,6 +41,27 @@ export class InventoryComponent implements OnInit  {
    );
  }
 
+ apiCategories(): void{
+  this.myDataService.getCategories().subscribe(
+    (data) => {
+      //console to see items.______
+      console.log('got categoies data', data);
+      this.categories = Array.isArray(data) ? data : [];
+    },
+    (error) => console.error('error fetching categories data', error)
+   );
+ }
+
+//add form
+addInventory(): void{
+  this.myDataService.addInventoryItem(this.newItem).subscribe( () =>{
+    this.apiInventory();
+    this.showInvenoryForm = false;
+  },
+  (error) => console.error('error adding an item' , error)
+  );
+}
+//quantity
  edit(item: any): void{
 
   const newQuantity = prompt(`Enter new quantity for "${item.name}": `, item.quantity.toString());

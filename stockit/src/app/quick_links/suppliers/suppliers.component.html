@@ -1,8 +1,39 @@
 <link rel="stylesheet" href="css/Search-Field-With-Icon.css">
 
-<div class="search-container" style="padding-left: 150px;padding-right: 150px;"><input type="text" class="search-input" name="search-bar" placeholder="Search..."><button class="btn btn-light search-btn" type="button"> <i class="fa fa-search"></i></button></div>
+<div class="search-container" style="padding-left: 150px;padding-right: 150px;">
+    <input type="text" class="search-input" name="search-bar" placeholder="Search..."><button class="btn btn-light search-btn" type="button">
+         <i class="fa fa-search"></i>
+        </button>
+</div>
+
+<button type="button" style="padding-left: 150px;padding-right: 150px;" class="btn btn-primary btn-sm" (click)="showSupplierForm = !showSupplierForm">
+    Add Supplier
+   </button>
+<div *ngIf="showSupplierForm" class="supplier-form">
+        <div class="rf-register-form" style="padding-left: 12px;padding-right: 12px;margin-left: 122px;margin-right: 122px;padding-top: 26px;">
+            <form class="rg-form" (ngSubmit)="addSupplier()">
+                <div class="rf-input-container">
+                    <label for="supplier_name"> Supplier Name</label>
+                    <input type="text" name="supplier_name" class="form-control rf-input-field" id="supplier_name" [(ngModel)]="newSupplier.supplier_name" required>
+                </div>
+                <div class="rf-input-container">
+                    <label for="contact_email"> Supplier Email</label>
+        <input type="email" name="contact_email"  class="form-control rf-input-field"  id="contact_email" [(ngModel)]="newSupplier.contact_email" required>
+                </div>
+                <div class="rf-input-container">
+                    <label for="contact_phone"> Supplier Phone Number</label>
+                    <input type="text" name="contact_phone" c class="form-control rf-input-field"  id="contact_phone" [(ngModel)]="newSupplier.contact_phone" required>
+                </div>
+                <button class="btn btn-primary rf-btn" type="submit">
+                    Create Suplier
+                </button>
+            </form>
+        </div>
+       
+
+</div>
 <div class="table-responsive" style="padding-left: 150px;padding-right: 150px;">
-    <button type="button" class="btn btn-primary btn-lg btn-block">Add Supplier</button>
+
     <table class="table">
         <thead>
             <tr class="table-primary">
@@ -20,7 +51,7 @@
                 <td>{{supplier.contact_phone}}</td>
             </tr>
             <tr *ngIf="suppliersList?.length === 0">
-                <td>no orders available</td>
+                <td>no suppliers available</td>
               </tr>
         </tbody>
     </table>
