@@ -38,20 +38,22 @@ export class MyDataService {
       return this.http.get(this.orderUrl);
     }
 
+    //inventory 
     getInventory(): Observable<any>{
       return this.http.get(this.inventoryUrl);
     }
-    //update inventory
+
     updateInventoryItem(item:any): Observable<any>{
       return this.http.put(`${this.inventoryUrl}${item.inventory_id}/`, item);
     }
-    getCategories(): Observable<any>{
-      return this.http.get(this.categoriesUrl);
-    }
+
+    // getCategories(): Observable<any>{
+    //   return this.http.get(this.categoriesUrl);
+    // }
     addInventoryItem(item:any): Observable<any>{
       return this.http.post(this.inventoryUrl, item);
     }
-    //delete invetory
+
     softDeleteItems(itemId: number): Observable<any>{
       return this.http.delete(`${this.inventoryUrl}${itemId}/`);
     }
