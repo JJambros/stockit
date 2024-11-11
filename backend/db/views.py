@@ -1,16 +1,20 @@
-from django.utils import timezone               # Added for dashboard (net calcs)
-from datetime import datetime, timedelta        # Added for forecasting and dashboard (net calcs)
-from django.db.models import Avg, Sum, F, Q, Count        # Added for forecasting and dashboard (net calcs & breakdown)
+from django.utils import timezone  # Added for dashboard (net calcs)
+from datetime import datetime, timedelta  # Added for forecasting and dashboard (net calcs)
+from django.db.models import Avg, Sum, F, Q, Count  # Added for forecasting and dashboard (net calcs & breakdown)
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework import status
-from rest_framework.authtoken.models import Token 
+from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
-from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, Customer, CustomerOrder, Shipment, PurchaseOrder, ForecastingPreferences, Supplier, Category
-from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, OrderItemSerializer, ShipmentSerializer, PurchaseOrderSerializer, ForecastingPreferencesSerializer, SupplierSerializer, CustomerOrderSerializer, CustomerSerializer, CategorySerializer
-from decimal import Decimal # Added because math is dumb (decimals and floats can't multiply)
+from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, Customer, CustomerOrder, \
+    Shipment, PurchaseOrder, ForecastingPreferences, Supplier
+from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, \
+    OrderItemSerializer, ShipmentSerializer, PurchaseOrderSerializer, ForecastingPreferencesSerializer, \
+    SupplierSerializer, CustomerOrderSerializer
+from decimal import Decimal  # Added because math is dumb (decimals and floats can't multiply)
+
 
 # Example of data view used for testing
 @api_view(['GET'])
@@ -35,6 +39,7 @@ def login_view(request):
         return Response({'token': token.key, 'user_id': user.id}, status=status.HTTP_200_OK)
     return Response({'error': 'Invalid Credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
+
 @api_view(['POST'])
 def logout_view(request):
     request.user.auth_token.delete()
@@ -48,7 +53,7 @@ def logout_view(request):
 def profile_detail(request):
     user = request.user  # Get the currently logged-in user
     try:
-        profile = Profile.objects.get(user=user, is_deleted=False) # Check for soft deletion
+        profile = Profile.objects.get(user=user, is_deleted=False)  # Check for soft deletion
     except Profile.DoesNotExist:
         return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -85,6 +90,7 @@ def inventory_list(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 # Retrieve, update, or soft-delete a specific inventory item
 @api_view(['GET', 'PUT', 'DELETE'])
 def inventory_detail(request, pk):
@@ -112,92 +118,6 @@ def inventory_detail(request, pk):
         inventory.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-# --------- CATEGORY VIEWS --------- #
-
-# List all categories or create a new one
-@api_view(['GET', 'POST'])
-def category_list(request):
-    if request.method == 'GET':
-        # Retrieve all categories excluding soft-deleted ones
-        categories = Category.objects.filter(is_deleted=False)
-        serializer = CategorySerializer(categories, many=True)
-        return Response(serializer.data)
-
-    elif request.method == 'POST':
-        # Create a new category
-        serializer = CategorySerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-# Retrieve, update, or delete a specific category
-@api_view(['GET', 'PUT', 'DELETE'])
-def category_detail(request, pk):
-    try:
-        category = Category.objects.get(pk=pk, is_deleted=False)
-    except Category.DoesNotExist:
-        return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
-
-    if request.method == 'GET':
-        serializer = CategorySerializer(category)
-        return Response(serializer.data)
-
-    elif request.method == 'PUT':
-        serializer = CategorySerializer(category, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        # Soft delete the category
-        category.is_deleted = True
-        category.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-# --------- SEARCH BAR VIEWS --------- #
-
-@api_view(['GET'])
-def search_view(request):
-    query = request.query_params.get('q', '')
-
-    # Initialize empty result lists for each model
-    profile_results = []
-    inventory_results = []
-    order_results = []
-
-    if query:
-        # Search Profiles
-        profiles = Profile.objects.filter(
-            Q(Fname__icontains=query) | Q(Lname__icontains=query) | Q(email__icontains=query),
-            is_deleted=False
-        )
-        profile_results = ProfileSerializer(profiles, many=True).data
-
-        # Search Inventory
-        inventory_items = Inventory.objects.filter(
-            Q(name__icontains=query) | Q(category__name__icontains=query),
-            is_deleted=False
-        )
-        inventory_results = InventorySerializer(inventory_items, many=True).data
-
-        # Search Customer Orders
-        orders = CustomerOrder.objects.filter(
-            Q(from_company__icontains=query) | Q(to_company__icontains=query),
-            is_deleted=False
-        )
-        order_results = CustomerOrderSerializer(orders, many=True).data
-
-    # Combine results
-    results = {
-        'profiles' : profile_results,
-        'inventory' : inventory_results,
-        'orders' : order_results,
-    }
-
-    return Response(results)
 
 # --------- DASHBOARD VIEWS --------- #
 
@@ -217,6 +137,7 @@ def dashboard_list(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # Retrieve, update, or soft-delete a specific dashboard entry
 @api_view(['GET', 'PUT', 'DELETE'])
@@ -264,8 +185,8 @@ def inventory_forecast(request, inventory_id, forecast_date):
     # Fetch historical sales data (past 3 months)
     three_months_ago = datetime.now().date() - timedelta(days=90)
     sales_history = InventoryHistory.objects.filter(
-        inventory=inventory, 
-        transaction_type='sale', 
+        inventory=inventory,
+        transaction_type='sale',
         transaction_date__gte=three_months_ago
     )
 
@@ -315,6 +236,7 @@ def inventory_forecast(request, inventory_id, forecast_date):
         'restock_message': restock_message
     })
 
+
 # --------- FORECASTING PREFERENCES VIEWS  --------- #
 
 @api_view(['GET', 'POST'])
@@ -330,6 +252,7 @@ def forecasting_preferences_list(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def forecasting_preferences_detail(request, pk):
@@ -364,6 +287,11 @@ def audit_trail_list(request):
     serializer = AuditTrailSerializer(audit_trails, many=True)
     return Response(serializer.data)
 
+@api_view(['GET'])
+def audit_log_view(request):
+    audit_logs = AuditTrail.objects.all().order_by('-change_time')
+    return render(request, 'audit_log.html', {'audit_logs': audit_logs})
+
 
 # --------- ORDER ITEM VIEWS --------- #
 
@@ -388,6 +316,7 @@ def customer_order_list(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def customer_order_detail(request, pk):
@@ -419,7 +348,8 @@ def customer_order_detail(request, pk):
 def index_view(request):
     return Response({"message": "Welcome to the API index"})
 
-# --------- SHIPMENT VIEWS --------- # 
+
+# --------- SHIPMENT VIEWS --------- #
 
 # List all shipments or create a new shipment
 @api_view(['GET', 'POST'])
@@ -437,6 +367,7 @@ def shipment_list(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 # Retrieve, update, or soft delete a specific shipment
 @api_view(['GET', 'PUT', 'DELETE'])
@@ -465,8 +396,9 @@ def shipment_detail(request, pk):
         shipment.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
     # --- TRACKING SHIPPING VIEWS --- #
+
+
 @api_view(['POST'])
 def mark_order_as_shipped(request, order_id):
     try:
@@ -482,7 +414,7 @@ def mark_order_as_shipped(request, order_id):
 # --------- DASHBOARD VIEWS --------- #
 
 
-    # --- VIEW FOR NET SALES --- #
+# --- VIEW FOR NET SALES --- #
 @api_view(['GET'])
 def dashboard_net_sales(request):
     # Get the time frame from request parameters
@@ -507,14 +439,14 @@ def dashboard_net_sales(request):
 
     # Calculate net sales by summing quantity * price for the filtered transactions
     net_sales = (
-        history_query.annotate(total_price=F('quantity') * F('inventory__price'))
-        .aggregate(net_sales=Sum('total_price'))['net_sales'] or 0
+            history_query.annotate(total_price=F('quantity') * F('inventory__price'))
+            .aggregate(net_sales=Sum('total_price'))['net_sales'] or 0
     )
 
     return Response({"net_sales": net_sales, "time_frame": time_frame})
 
-
     # --- VIEW FOR TOTAL ORDERS --- #
+
 
 @api_view(['GET'])
 def dashboard_total_orders(request):
@@ -543,8 +475,8 @@ def dashboard_total_orders(request):
 
     return Response({"total_orders": total_orders, "time_frame": time_frame})
 
-
     # --- VIEWS FOR NET PURCHASES - BY CATEGORY --- #
+
 
 @api_view(['GET'])
 def dashboard_net_purchases_by_category(request):
@@ -583,8 +515,8 @@ def dashboard_net_purchases_by_category(request):
         "time_frame": time_frame
     })
 
-
     # --- VIEWS FOR NET PURCHASES - BY ITEM --- #
+
 
 @api_view(['GET'])
 def dashboard_net_purchases_by_item(request):
@@ -623,8 +555,8 @@ def dashboard_net_purchases_by_item(request):
         "time_frame": time_frame
     })
 
-    
     # --- VIEWS FOR BREAKDOWN --- #
+
 
 @api_view(['GET'])
 def dashboard_total_breakdown(request):
@@ -665,7 +597,8 @@ def dashboard_total_breakdown(request):
 
     # Filter Shipments for assigned shipments and shipments in need of attention
     shipment_query = Shipment.objects.exclude(tracking_number='0000', shipping_company='To Be Determined')
-    shipments_needing_attention_query = Shipment.objects.filter(Q(tracking_number='0000') | Q(shipping_company='To Be Determined'))
+    shipments_needing_attention_query = Shipment.objects.filter(
+        Q(tracking_number='0000') | Q(shipping_company='To Be Determined'))
 
     if start_date:
         shipment_query = shipment_query.filter(shipped_date__gte=start_date)
@@ -726,6 +659,7 @@ def supplier_list(request):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def supplier_detail(request, pk):
