@@ -19,7 +19,7 @@
                                 <ng-container *ngFor="let item of inventoryList">
                                     <tr *ngIf="item.quantity < item.forecast_level">
                                         <td>{{ item.name }}</td>
-                                        <td style="text-align: right;"><button class="btn btn-primary btn-sm" (click)="edit(item)">Edit</button></td>  
+                                        <td style="text-align: right;"><button class="btn btn-alert" (click)="edit(item)">Edit</button></td>  
                                     </tr>
                                 </ng-container>
                             </tbody>

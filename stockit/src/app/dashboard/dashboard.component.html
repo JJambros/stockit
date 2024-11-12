@@ -27,7 +27,7 @@
                 <div class="card-body" style="box-shadow: 0px 0px 5px var(--bs-secondary-color);">
                     <h4 class="card-title">Net Sales</h4>
                     <h6 class="text-muted card-subtitle mb-2">Today</h6>
-                    <p class="fs-2 card-text">${{ sales.net_sales }}</p>
+                    <p class="fs-2 card-text">{{ sales.net_sales | currency:'USD':'symbol':'1.2-2'}}</p>
                 </div>
             </div>
             <div class="card" style="margin-left: 16px;margin-right: 30px;">
@@ -55,7 +55,7 @@
                             <tbody>
                                 <tr *ngFor="let row of paginatedRowsByCategory">
                                     <td>{{ row.type }}</td>
-                                    <td style="text-align: right;">{{ row.amount }}</td>
+                                    <td style="text-align: right;">{{ row.amount | currency:'USD':'symbol':'1.2-2'}}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -95,7 +95,7 @@
                             <tbody>
                                 <tr *ngFor="let row of paginatedRowsByItem">
                                     <td>{{ row.type }}</td>
-                                    <td style="text-align: right;">{{ row.amount }}</td>
+                                    <td style="text-align: right;">{{ row.amount | currency:'USD':'symbol':'1.2-2'}}</td>
                                 </tr>
                             </tbody>
                         </table>
