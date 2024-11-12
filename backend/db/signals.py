@@ -7,8 +7,9 @@ from django.utils import timezone # For Tracking Shipping
 from datetime import timedelta # For Tracking Shipping
 from threading import Timer # For Tracking Shipping
 from django.contrib.auth.models import User
+from django.contrib import messages
 from django.contrib.contenttypes.models import ContentType
-from .models import AuditTrail, SupplierOrder, OrderItem, PurchaseOrder, Inventory, ReorderThreshold, InventoryHistory, Profile, Shipment
+from .models import AuditTrail, SupplierOrder, OrderItem, Notifications, PurchaseOrder, Inventory, ReorderThreshold, InventoryHistory, Profile, Shipment
 
 
 # --------- SIGNAL FOR AUDIT TRAIL --------- #
@@ -84,13 +85,33 @@ def auto_generate_order(sender, instance, **kwargs):
         # Retrieve the reorder threshold for this inventory item
         threshold = ReorderThreshold.objects.get(inventory=instance)
 
-        # Check if the inventory quantity is below the reorder point
+        # Check if the inventory quantity is approaching the reorder point
+        if instance.quantity <= threshold.reorder_point * 1.2:  # e.g., 20% above reorder point
+            user = get_current_user()
+
+            if user and user.is_authenticated:
+                Notifications.objects.create(
+                    user=user,
+                    message=f"Inventory for '{instance.name}' is approaching the reorder point."
+                )
+        # Check if the inventory quantity is below the reorder point to trigger auto-order
         if instance.quantity < threshold.reorder_point:
             SupplierOrder.objects.create(
                 supplier=threshold.supplier,  # Adjust if needed to get the relevant supplier
                 product=instance,
                 quantity=threshold.reorder_quantity  # Quantity to reorder from the threshold
             )
+            # Notify the user about the auto-order creation
+            if user and user.is_authenticated:
+                Notifications.objects.create(
+                    user=user,
+                    message=f"Automatic order created for '{instance.name}' due to low inventory."
+                )
+                # Create a notification in the database
+                Notifications.objects.create(
+                    user=user,
+                    message=f"Automatic order created for '{instance.name}' as it reached the reorder threshold."
+                )
     except ReorderThreshold.DoesNotExist:
         # Log or handle the case where no reorder threshold is set for this inventory item
         print(f"No reorder threshold set for Inventory item: {instance.name}")

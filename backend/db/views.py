@@ -90,6 +90,19 @@ def inventory_list(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+#this is to make a request to the signal
+def update_inventory_view(request, item_id):
+    inventory = Inventory.objects.get(id=item_id)
+
+    # Perform the inventory update, for example, reducing count after a sale
+    with transaction.atomic():
+        inventory.count -= 10  # Example decrement
+        inventory.save()
+
+    # Manually trigger the signal with request context
+    post_save.send(sender=Inventory, instance=inventory, request=request)
+
+    return redirect('some-view')
 
 # Retrieve, update, or soft-delete a specific inventory item
 @api_view(['GET', 'PUT', 'DELETE'])
