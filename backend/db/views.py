@@ -335,6 +335,7 @@ def inventory_forecast(request, inventory_id, forecast_date):
     avg_daily_orders = sales_history.count() / 90
     forecasted_orders = avg_daily_orders * days_into_future
 
+    # New responses added
     return Response({
         'forecast_date': forecast_date,
         'trend_direction': trend_direction,
