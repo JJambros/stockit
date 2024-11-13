@@ -40,6 +40,7 @@ urlpatterns = [
 
     # Inventory Forecasting URLs
     path('inventory/forecast/<int:inventory_id>/<str:forecast_date>/', views.inventory_forecast, name='inventory-forecast'),
+    path('forecasting/adjust/', views.adjust_forecast, name='forecast-adjust'),
 
     # ForecastingPreferences URLs
     path('forecasting-preferences/', views.forecasting_preferences_list, name='forecasting-preferences-list'),
