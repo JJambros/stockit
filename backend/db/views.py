@@ -8,11 +8,11 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
-from .models import Profile, Inventory, Dashboard, Customer, InventoryHistory, AuditTrail, OrderItem, CustomerOrder, \
-    Shipment, PurchaseOrder, ForecastingPreferences, Supplier
-from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, \
+from .models import Profile, Inventory, Dashboard, Customer, InventoryHistory, ReorderThreshold, AuditTrail, OrderItem, CustomerOrder, \
+    Shipment, PurchaseOrder, ForecastingPreferences, Supplier, SupplierOrder
+from .serializers import ProfileSerializer, InventorySerializer, ReorderThresholdSerializer, DashboardSerializer, AuditTrailSerializer, \
     OrderItemSerializer, ShipmentSerializer, PurchaseOrderSerializer, ForecastingPreferencesSerializer, \
-    SupplierSerializer, CustomerOrderSerializer
+    SupplierSerializer, CustomerOrderSerializer, SupplierOrderSerializer
 from decimal import Decimal  # Added because math is dumb (decimals and floats can't multiply)
 
 
@@ -176,6 +176,7 @@ def reorder_threshold_detail(request, pk):
         threshold.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+#
 @api_view(['GET', 'POST'])
 def notification_list(request):
     if request.method == 'GET':
