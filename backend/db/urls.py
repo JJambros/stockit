@@ -12,9 +12,17 @@ urlpatterns = [
     # Profile URL (viewing/updating the logged-in user's profile)
     path('profile/', views.profile_detail, name='profile-detail'),
 
+    # Users URLs
+    path('users/', views.user_list, name='user-list'),  # List and create users
+    path('users/<int:pk>/', views.user_detail, name='user-detail'),  # Get, update, delete specific user
+
     # Inventory URLs
     path('inventory/', views.inventory_list, name='inventory-list'),  # List and create inventory items
     path('inventory/<int:pk>/', views.inventory_detail, name='inventory-detail'),  # Get, update, delete specific item
+
+    #Categories URLs
+    path('categories/', views.category_list, name='category-list'),  # List and create categories
+    path('categories/<int:pk>/', views.category_detail, name='category-detail'),  # Get, update, delete specific category
 
     # Dashboard Related URLs
     path('dashboard/', views.dashboard_list, name='dashboard-list'),  # List and create dashboard entries
