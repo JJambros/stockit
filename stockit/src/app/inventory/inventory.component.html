@@ -31,7 +31,16 @@
         </div>
     </div>
     <div class="col">
-        <p style="text-align: center;">Nice chart goes here</p>
+        <ngx-charts-pie-chart
+  [view]="[700, 400]"
+  [results]="single"
+  [gradient]="gradient"
+  [legend]="showLegend"
+  [doughnut]="isDoughnut"
+  (select)="onSelect($event)"
+  (activate)="onActivate($event)"
+  (deactivate)="onDeactivate($event)">
+</ngx-charts-pie-chart>
     </div>
 </div>
 <div class="container-fluid">
@@ -113,7 +122,7 @@
                                 <!-- wait for sku -->
                                 <!-- <td>{{item.inventory_id}}</td> -->
                                 <td>{{item.name}}</td>
-                                <td>{{item.category}}</td>
+                                <td>{{item.category.name}}</td>
                                 <td>{{item.forecast_level}}</td>
                                 <td>
                                     <div *ngIf="item.editQ">

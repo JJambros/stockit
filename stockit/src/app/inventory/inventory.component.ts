@@ -1,13 +1,21 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgModule } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { MyDataService } from '../my-data.service';
 import { CommonModule } from '@angular/common';
 import { error } from 'console';
 import { FormsModule } from '@angular/forms';
+import { BrowserModule } from '@angular/platform-browser';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
+
+interface PieChartData {
+  name: string;
+  value: number;
+}
+
 @Component({
   selector: 'app-inventory',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgxChartsModule],
   templateUrl: './inventory.component.html',
   styleUrls: ['./inventory.component.css'],
   providers: [MyDataService]
@@ -25,21 +33,59 @@ export class InventoryComponent implements OnInit  {
   category:'',
   forecast_level:'',
  };
+
+ // Pie chart options
+ single: any[] = [];
+ view: any[] = [700, 400];
+
+ // options
+ gradient: boolean = true;
+ showLegend: boolean = true;
+ showLabels: boolean = true;
+ isDoughnut: boolean = false;
+ legendPosition: string = 'below';
+
+ colorScheme = {
+   domain: ['#5AA454', '#A10A28', '#C7B42C', '#AAAAAA']
+ };
+
  constructor(private myDataService: MyDataService){}
 
  ngOnInit(): void {
   this.apiInventory();
  }
+
  apiInventory(): void{
   this.myDataService.getInventory().subscribe(
     (data) => {
       //console to see items.______
       //console.log('got inventory data', data);
       this.inventoryList = Array.isArray(data) ? data : [];
+      this.transformDataForChart();
     },
     (error) => console.error('error fetching INVENTORY data', error)
    );
  }
+
+ transformDataForChart(): void {
+  // Transform the inventory data into the format required by the pie chart
+  this.single = this.inventoryList.map(item => ({
+    name: item.category.name, // Assuming category object has a 'name' field
+    value: item.quantity
+  }));
+}
+
+onSelect(data: PieChartData): void {
+  console.log('Item clicked', JSON.parse(JSON.stringify(data)));
+}
+
+onActivate(data: PieChartData): void {
+  console.log('Activate', JSON.parse(JSON.stringify(data)));
+}
+
+onDeactivate(data: PieChartData): void {
+  console.log('Deactivate', JSON.parse(JSON.stringify(data)));
+}
 
 //  apiCategories(): void{
 //   this.myDataService.getCategories().subscribe(
