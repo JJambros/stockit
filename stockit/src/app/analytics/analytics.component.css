@@ -1,0 +1,61 @@
+.analytics-container {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+  }
+  
+  .table-title {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    background-color: white;
+  }
+  
+  .inventory-table th, .inventory-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .inventory-table th {
+    background-color: #f4f4f4;
+    color: #555;
+    font-weight: bold;
+  }
+  
+  .inventory-table td {
+    color: #333;
+  }
+  
+  .inventory-table tr:hover {
+    background-color: #f1f1f1;
+  }
+  
+  .inventory-table td:last-child {
+    text-align: center;
+  }
+  
+  .no-data-message {
+    font-size: 18px;
+    text-align: center;
+    color: #999;
+  }
+  
+  @media screen and (max-width: 768px) {
+    .inventory-table th, .inventory-table td {
+      padding: 8px 10px;
+    }
+  
+    .inventory-table {
+      font-size: 14px;
+    }
+  }
+  

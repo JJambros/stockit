@@ -24,6 +24,9 @@ export class InventoryComponent implements OnInit  {
  inventoryList: any[] =[];
  categories: any[] =[];
  showInvenoryForm: boolean = false; //default doesn't display form
+ showModal: boolean = false;  // Flag to show/hide modal
+ selectedItem: any = {};  // Holds the selected inventory item
+
  //form values
  newItem={
   name:'',
@@ -67,6 +70,7 @@ export class InventoryComponent implements OnInit  {
    );
  }
 
+ // Pie chart methods
  transformDataForChart(): void {
   // Transform the inventory data into the format required by the pie chart
   this.single = this.inventoryList.map(item => ({
@@ -85,6 +89,35 @@ onActivate(data: PieChartData): void {
 
 onDeactivate(data: PieChartData): void {
   console.log('Deactivate', JSON.parse(JSON.stringify(data)));
+}
+
+// Modal methods
+editAlert(item: any): void {
+  this.selectedItem = { ...item };  // Make a copy of the item to avoid mutating the original
+  this.showModal = true;  // Show the modal
+}
+
+closeModal(): void {
+  this.showModal = false;
+}
+
+updateForecastingPreferences(): void {
+  const url = `your-api-url/forecasting-preferences/${this.selectedItem.inventory_id}/`;  // Replace with your actual URL
+  const data = {
+    reorder_point: this.selectedItem.reorder_point,
+    reorder_quantity: this.selectedItem.reorder_quantity
+  };
+
+  this.http.put(url, data).subscribe(
+    (response) => {
+      console.log('Updated successfully', response);
+      this.showModal = false;  // Close the modal after successful update
+      // You might want to update the inventoryList to reflect changes in the UI
+    },
+    (error) => {
+      console.error('Error updating', error);
+    }
+  );
 }
 
 //  apiCategories(): void{
