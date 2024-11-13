@@ -22,6 +22,12 @@ urlpatterns = [
 
     #Categories URLs
 
+    # Category URLs
+    path('categories/', views.category_list, name='category-list'),
+    path('categories/<int:pk>/', views.category_detail, name='category-detail'),
+
+    # Search URLs 
+    path('search/', views.search_view, name='search'),
 
     # Dashboard Related URLs
     path('dashboard/', views.dashboard_list, name='dashboard-list'),  # List and create dashboard entries

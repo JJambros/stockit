@@ -19,11 +19,11 @@ export class InventoryComponent implements OnInit  {
  //form values
  newItem={
   name:'',
-  cost: 0,
-  price:0,
-  quantity:0,
-  category:null,
-  forecast_level:0,
+  cost: '',
+  price: '',
+  quantity:'',
+  category:'',
+  forecast_level:'',
  };
  constructor(private myDataService: MyDataService){}
 
@@ -41,16 +41,16 @@ export class InventoryComponent implements OnInit  {
    );
  }
 
- apiCategories(): void{
-  this.myDataService.getCategories().subscribe(
-    (data) => {
-      //console to see items.______
-      console.log('got categoies data', data);
-      this.categories = Array.isArray(data) ? data : [];
-    },
-    (error) => console.error('error fetching categories data', error)
-   );
- }
+//  apiCategories(): void{
+//   this.myDataService.getCategories().subscribe(
+//     (data) => {
+//       //console to see items.______
+//       console.log('got categoies data', data);
+//       this.categories = Array.isArray(data) ? data : [];
+//     },
+//     (error) => console.error('error fetching categories data', error)
+//    );
+//  }
 
 //add form
 addInventory(): void{
@@ -64,21 +64,20 @@ addInventory(): void{
 //quantity
  edit(item: any): void{
 
-  const newQuantity = prompt(`Enter new quantity for "${item.name}": `, item.quantity.toString());
+  item.editQ=true;
+  item.newQuantity = item.quantity;
 
-  if(newQuantity === null){
-    return;
-  }
+ }
 
-  const quantity_parsed = parseInt(newQuantity, 10);
-
+ updateQuantity(item: any):void{
+  const quantity_parsed = parseInt(item.newQuantity, 10);
   if(isNaN(quantity_parsed) || quantity_parsed < 0){
-    alert('Cannot allow quantity go below 0');
+    alert('Please re-enter a non-negative number.');
     return;
   }
 
   const updatedItem = {...item, quantity: quantity_parsed};
-
+  
   this.myDataService.updateInventoryItem(updatedItem).subscribe( () =>{
     //console check
     console.log(`${item.inventory_id} quantity updated`);
@@ -89,8 +88,19 @@ addInventory(): void{
     console.error('error updating', error);
   }
 );
-
  }
+
+ cancelEdit(item:any):void{
+  item.editQ =false;
+ }
+
+
+  
+
+//   
+
+
+ 
 
  softDelete(itemId: number): void{
   if(confirm('Are you sure you want to delete this item from inventory?')){

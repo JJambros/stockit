@@ -146,19 +146,27 @@ class NotificationsSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {'is_deleted': {'read_only': True}}
 
-# CustomerOrder Serializer
-class CustomerOrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CustomerOrder
-        fields = '__all__'
-        extra_kwargs = {'is_deleted': {'read_only': True}, 'shipped': {'read_only': False}}
-
 # Order Item Serializer
 class OrderItemSerializer(serializers.ModelSerializer):
+    inventory_name = serializers.CharField(source='inventory.name', read_only=True)
+
     class Meta:
         model = OrderItem
         fields = '__all__'
         extra_kwargs = {'is_deleted': {'read_only': True}}
+
+# Customer Order Serializer
+class CustomerOrderSerializer(serializers.ModelSerializer):
+    status_display = serializers.CharField(source='status.current_status', read_only=True)
+    location_name = serializers.CharField(source='location.address', read_only=True)
+    customer_name = serializers.CharField(source='customer.name', read_only=True)
+    user_name = serializers.CharField(source='user.username', read_only=True)
+    items = OrderItemSerializer(source='orderitem_set', many=True, read_only=True)
+
+    class Meta:
+        model = CustomerOrder
+        fields = '__all__'  # Keeps all model fields and adds the custom readable fields
+        extra_kwargs = {'is_deleted': {'read_only': True}, 'shipped': {'read_only': False}}
 
 # Shipment Serializer
 class ShipmentSerializer(serializers.ModelSerializer):

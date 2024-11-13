@@ -15,9 +15,12 @@ interface RowData {
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit {
+  currentTime: Date = new Date();
   profile: any;
   orders: any;
   sales: any;
+  breakdownData: any;
+  errorMessage: string | null = null;
 
   constructor(private dataService: MyDataService) { }
   
@@ -52,6 +55,20 @@ export class DashboardComponent implements OnInit {
 
     this.fetchDataByCategory();
     this.fetchDataByItem();
+    this.fetchBreakdownData();
+  }
+
+  fetchBreakdownData(): void {
+    this.dataService.getBreakdown().subscribe({
+      next: (data) => {
+        this.breakdownData = data;
+        this.errorMessage = null;
+      },
+      error: (err) => {
+        console.error(err);
+        this.errorMessage = 'Could not load breakdown data';
+      }
+    });
   }
 
   fetchDataByCategory(timeFrame: string = '24h'): void {
@@ -69,7 +86,7 @@ export class DashboardComponent implements OnInit {
   fetchDataByItem(timeFrame: string = '24h'): void {
     this.dataService.getNetPurchasesByItem(timeFrame).subscribe(response => {
       this.rowsByItem = response.net_purchases_by_item.map((item: any) => ({
-        type: item['inventory__item__name'],
+        type: item['inventory__name'],
         amount: item.net_purchase.toFixed(2)
       }));
       this.calculatePaginationByItem();
