@@ -15,9 +15,12 @@ interface RowData {
   styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit {
+  currentTime: Date = new Date();
   profile: any;
   orders: any;
   sales: any;
+  breakdownData: any;
+  errorMessage: string | null = null;
 
   constructor(private dataService: MyDataService) { }
   
@@ -42,19 +45,33 @@ export class DashboardComponent implements OnInit {
       this.profile = data;
     });
 
-    this.dataService.getDashboardOrders('24h').subscribe(data => {
+    this.dataService.getDashboardOrders('overall').subscribe(data => {
       this.orders = data;
     });
 
-    this.dataService.getDashboardNetSales('24h').subscribe(data => {
+    this.dataService.getDashboardNetSales('overall').subscribe(data => {
       this.sales = data;
     });
 
     this.fetchDataByCategory();
     this.fetchDataByItem();
+    this.fetchBreakdownData();
   }
 
-  fetchDataByCategory(timeFrame: string = '24h'): void {
+  fetchBreakdownData(): void {
+    this.dataService.getBreakdown().subscribe({
+      next: (data) => {
+        this.breakdownData = data;
+        this.errorMessage = null;
+      },
+      error: (err) => {
+        console.error(err);
+        this.errorMessage = 'Could not load breakdown data';
+      }
+    });
+  }
+
+  fetchDataByCategory(timeFrame: string = 'overall'): void {
     this.dataService.getNetPurchasesByCategory(timeFrame).subscribe(response => {
       this.rowsByCategory = response.net_purchases_by_category.map((item: any) => ({
         type: item['inventory__category__name'],
@@ -66,10 +83,10 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  fetchDataByItem(timeFrame: string = '24h'): void {
+  fetchDataByItem(timeFrame: string = 'overall'): void {
     this.dataService.getNetPurchasesByItem(timeFrame).subscribe(response => {
       this.rowsByItem = response.net_purchases_by_item.map((item: any) => ({
-        type: item['inventory__item__name'],
+        type: item['inventory__name'],
         amount: item.net_purchase.toFixed(2)
       }));
       this.calculatePaginationByItem();

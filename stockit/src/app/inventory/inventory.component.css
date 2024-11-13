@@ -1,0 +1,6 @@
+.btn.btn-alert {
+    background-color: red;
+    border-color: red;
+    color: white;
+    padding: 2px 5px; /* Adjust padding to make the button smaller */
+}

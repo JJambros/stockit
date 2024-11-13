@@ -12,6 +12,8 @@ import { OrdersSummayComponent } from './quick_links/orders-summay/orders-summay
 import { CustomerOrderComponent } from './quick_links/customer-order/customer-order.component';
 import { SuppliersComponent } from './quick_links/suppliers/suppliers.component';
 import { ItemsComponent } from './quick_links/items/items.component';
+import { CompanyPageComponent } from './company-page/company-page.component';
+import { AnalyticsComponent } from './analytics/analytics.component';
 
 export const routes: Routes = [
     {
@@ -35,6 +37,8 @@ export const routes: Routes = [
           {path: 'customer-order', component: CustomerOrderComponent},
           {path: 'suppliers', component: SuppliersComponent},
           {path: 'itemList', component: ItemsComponent},
+          {path: 'company-page', component: CompanyPageComponent},
+          {path: 'analytics', component: AnalyticsComponent},
         ]
       },
       { path: '**', redirectTo: 'login' }  // Redirect to login if unknown route

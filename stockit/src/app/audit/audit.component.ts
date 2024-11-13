@@ -19,7 +19,11 @@ export class AuditComponent implements OnInit {
       (data) => {
         //console data vals
        // console.log('got data', data);
-         this.auditTrails = Array.isArray(data) ? data : [];
+         this.auditTrails = Array.isArray(data) ? data.sort((a:any,b:any) => {
+          const dateTimeA = new Date(`${a.formatted_date}T${a.formatted_time}`).getTime();
+          const dateTimeB = new Date(`${b.formatted_date}T${b.formatted_time}`).getTime();
+          return dateTimeB - dateTimeA;  // Descending order
+        }) : [];
       },
       (error) => console.error('error fetching AUDIT data', error)
     );

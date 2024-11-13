@@ -1,0 +1,39 @@
+<div class="analytics-container">
+    <h2>Inventory Forecast List</h2>
+  
+    <table *ngIf="inventoryForecastList.length; else noData" class="inventory-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Quantity</th>
+          <th>Price</th>
+          <th>Forecast Date</th>
+          <th>Forecasted Profit</th>
+          <th>Forecasted Expenses</th>
+          <th>Forecasted Quantity Used</th>
+          <th>Forecasted Remaining Quantity</th>
+          <th>Forecasted Orders</th>
+          <th>Restock Message</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of inventoryForecastList">
+          <td>{{ item.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>${{ item.price }}</td>
+          <td>{{ item.forecast_date }}</td>
+          <td>${{ item.forecasted_profit }}</td>
+          <td>${{ item.forecasted_expenses }}</td>
+          <td>{{ item.forecasted_quantity_used }}</td>
+          <td>{{ item.forecasted_remaining_quantity }}</td>
+          <td>{{ item.forecasted_orders }}</td>
+          <td>{{ item.restock_message }}</td>
+        </tr>
+      </tbody>
+    </table>
+  
+    <ng-template #noData>
+      <p>No inventory data available.</p>
+    </ng-template>
+  </div>
+  
