@@ -54,6 +54,8 @@ export class InventoryComponent implements OnInit  {
 
 //add form
 addInventory(): void{
+  //test print to console item added details
+  console.log('item: ', this.newItem);
   this.myDataService.addInventoryItem(this.newItem).subscribe( () =>{
     this.apiInventory();
     this.showInvenoryForm = false;

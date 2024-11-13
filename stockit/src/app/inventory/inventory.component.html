@@ -78,11 +78,8 @@
                   <div class="form-group col-md-6">
                     <label for="itemCategory">Category</label>
                     <select class="form-control" name="category" id="itemCategory" [(ngModel)]="newItem.category" name="category" required>
-                        <option value="">
-                            test category
-                        </option>
-                        <!-- <option *ngFor="let category of categories" [value]="category.id">
-                             {{category.name}}</option> -->
+                        <option *ngFor="let item of inventoryList" [value]="item.category.id">
+                             {{item.category.name}}</option>
                     </select>
                   </div> 
                 <!-- </div> -->
@@ -122,15 +119,15 @@
                                 <!-- wait for sku -->
                                 <!-- <td>{{item.inventory_id}}</td> -->
                                 <td>{{item.name}}</td>
-                                <td>{{item.category}}</td>
+                                <td>{{item.category.name}}</td>
                                 <td>{{item.forecast_level}}</td>
                                 <td>
                                     <div *ngIf="item.editQ">
                                         <input type="number" [(ngModel)]="item.newQuantity" class="form-control" style="display: inline-block; width: 80px;">
-                                        <button class="btn btn-primary" (click)="updateQuantity(item)">
+                                        <button class="btn btn-success" (click)="updateQuantity(item)">
                                             Save
                                         </button>
-                                        <button class="btn btn-warning" (click)="cancelEdit(item)">
+                                        <button class="btn btn-secondary" (click)="cancelEdit(item)">
                                             Cancel
                                         </button>
                                     </div>
