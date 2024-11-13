@@ -283,7 +283,6 @@ class CustomerOrder(models.Model):
     customer_order_date = models.DateField()
     location = models.ForeignKey(Location, on_delete=models.CASCADE)
     status = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Add this line to link to the user
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
     shipped = models.BooleanField(default=False)  # To mark when the item is ready for shipment

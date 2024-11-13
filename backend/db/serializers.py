@@ -1,5 +1,5 @@
 from rest_framework import serializers 
-from .models import (Profile, Inventory, Customer, Dashboard, Location, InventoryHistory, 
+from .models import (Profile, Inventory, Customer, Dashboard, Location, InventoryHistory,
                      ForecastingPreferences, ForecastResults, DashboardReports, DashboardVisuals, 
                      ReportDateRange, UserDashSettings, OrderStatus, ReorderThreshold, Supplier,
                      PurchaseOrder, Notifications, CustomerOrder, OrderItem, Shipment, AuditTrail,

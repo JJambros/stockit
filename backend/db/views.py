@@ -8,7 +8,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
-from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, Customer, CustomerOrder, \
+from .models import Profile, Inventory, Dashboard, Customer, InventoryHistory, AuditTrail, OrderItem, CustomerOrder, \
     Shipment, PurchaseOrder, ForecastingPreferences, Supplier
 from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, \
     OrderItemSerializer, ShipmentSerializer, PurchaseOrderSerializer, ForecastingPreferencesSerializer, \
@@ -136,6 +136,83 @@ def inventory_detail(request, pk):
         history_items = InventoryHistory.objects.all().order_by('-transaction_date')
         return render(request, 'inventory_history.html', {'history_items': history_items})
 
+# --------- REORDER THRESHOLD VIEWS --------- #
+
+@api_view(['GET', 'POST'])
+def reorder_threshold_list(request):
+    if request.method == 'GET':
+        thresholds = ReorderThreshold.objects.filter(is_deleted=False)
+        serializer = ReorderThresholdSerializer(thresholds, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = ReorderThresholdSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def reorder_threshold_detail(request, pk):
+    try:
+        threshold = ReorderThreshold.objects.get(pk=pk, is_deleted=False)
+    except ReorderThreshold.DoesNotExist:
+        return Response({'error': 'Reorder Threshold not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = ReorderThresholdSerializer(threshold)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = ReorderThresholdSerializer(threshold, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        threshold.is_deleted = True
+        threshold.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+@api_view(['GET', 'POST'])
+def notification_list(request):
+    if request.method == 'GET':
+        notifications = Notifications.objects.filter(is_deleted=False)
+        serializer = NotificationsSerializer(notifications, many=True)
+        return Response(serializer.data)
+
+    elif request.method == 'POST':
+        serializer = NotificationsSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def notification_detail(request, pk):
+    try:
+        notification = Notifications.objects.get(pk=pk, is_deleted=False)
+    except Notifications.DoesNotExist:
+        return Response({'error': 'Notification not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = NotificationsSerializer(notification)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = NotificationsSerializer(notification, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        notification.is_deleted = True
+        notification.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 # --------- DASHBOARD VIEWS --------- #
 
@@ -701,3 +778,39 @@ def supplier_detail(request, pk):
         supplier.is_deleted = True
         supplier.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @api_view(['GET', 'POST'])
+    def supplier_order_list(request):
+        if request.method == 'GET':
+            supplier_orders = SupplierOrder.objects.all()
+            serializer = SupplierOrderSerializer(supplier_orders, many=True)
+            return Response(serializer.data)
+
+        elif request.method == 'POST':
+            serializer = SupplierOrderSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @api_view(['GET', 'PUT', 'DELETE'])
+    def supplier_order_detail(request, pk):
+        try:
+            supplier_order = SupplierOrder.objects.get(pk=pk)
+        except SupplierOrder.DoesNotExist:
+            return Response({'error': 'Supplier Order not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == 'GET':
+            serializer = SupplierOrderSerializer(supplier_order)
+            return Response(serializer.data)
+
+        elif request.method == 'PUT':
+            serializer = SupplierOrderSerializer(supplier_order, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        elif request.method == 'DELETE':
+            supplier_order.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
