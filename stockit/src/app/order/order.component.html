@@ -14,6 +14,7 @@
                     <th>Estimated Arrival</th>
                     <th>Shipping Company</th>
                     <!-- <th>Order Status</th> -->
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -23,6 +24,10 @@
                     <td>{{order.est_delivery_date}}</td>
                     <td>{{order.shipping_company}}</td>
                     <!-- <td>{{order.current_status}}</td> -->
+                    <td>
+                        <!-- Add button to mark order as shipped -->
+                        <button class="btn btn-success" (click)="markAsShipped(order.order)">Mark as Shipped</button>
+                    </td>
                 </tr>
                 <tr *ngIf="orders?.length === 0">
                     <td>no orders available</td>

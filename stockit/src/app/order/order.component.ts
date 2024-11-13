@@ -21,4 +21,16 @@ export class OrderComponent implements OnInit {
       (error) => console.error('error fetching data', error)
     );
   }
+
+  markAsShipped(orderId: number): void {
+    this.myDataService.markOrderAsShipped(orderId).subscribe(
+      (response) => {
+        console.log('Order marked as shipped', response);
+        // Optionally, update the order status here
+      },
+      (error) => {
+        console.error('Error marking order as shipped', error);
+      }
+    );
+  }
 }
