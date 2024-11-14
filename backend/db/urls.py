@@ -68,4 +68,8 @@ urlpatterns = [
     # Supplier URLs
     path('suppliers/', views.supplier_list, name='supplier-list'),
     path('suppliers/<int:pk>/', views.supplier_detail, name='supplier-detail'),
+
+    # Purchase Order URLs
+    path('purchase-orders/', views.purchase_order_list, name='purchase-order-list'),
+    path('purchase-orders/<int:pk>/', views.purchase_order_detail, name='purchase-order-detail'),
 ]

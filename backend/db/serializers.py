@@ -120,6 +120,10 @@ class SupplierSerializer(serializers.ModelSerializer):
 
 # PurchaseOrder Serializer
 class PurchaseOrderSerializer(serializers.ModelSerializer):
+    # Char.Field supplier_name and inventory_name so that the name appears instead of the db ID number
+    supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True) 
+    inventory_name = serializers.CharField(source='inventory.name', read_only=True)
+
     class Meta:
         model = PurchaseOrder
         fields = '__all__'
