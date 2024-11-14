@@ -8,7 +8,7 @@ from datetime import timedelta # For Tracking Shipping
 from threading import Timer # For Tracking Shipping
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from .models import AuditTrail, SupplierOrder, OrderItem, PurchaseOrder, Inventory, ReorderThreshold, InventoryHistory, Profile, Shipment
+from .models import AuditTrail, SupplierOrder, OrderItem, Category, PurchaseOrder, Inventory, ReorderThreshold, InventoryHistory, Profile, Shipment
 
 
 # --------- SIGNAL FOR AUDIT TRAIL --------- #
