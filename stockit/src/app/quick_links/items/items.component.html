@@ -17,12 +17,12 @@
         <tbody>
             <tr class="table-light" *ngFor="let item of itemsList">
                 <td>{{item.name}}</td>
-                <td>{{item.cost}}</td>
-                <td >{{item.price}}</td>
+                <td><input type="number" [(ngModel)]="item.cost" class="form-control" style="width: 80px;" /></td>
+                <td><input type="number" [(ngModel)]="item.price" class="form-control" style="width: 80px;" /></td>
                 <td>{{item.quantity}}</td>
                 <td>{{item.forecast_level}}</td>
-                <td>{{item.category}}</td>
-                <th><button>Edit</button></th>
+                <td>{{item.category.name}}</td>
+                <th><button class="btn btn-primary btn-sm reset" type="button" style="margin: 2px;" (click)="updateItem(item)">Update</button><button class="btn btn-alert" (click)="deleteItem(item.inventory_id)">Delete</button></th>
             </tr>
             <tr *ngIf="itemsList?.length === 0">
                 <td>no orders available</td>
