@@ -347,6 +347,13 @@ def inventory_forecast(request, inventory_id, forecast_date):
     avg_daily_orders = sales_history.count() / 90
     forecasted_orders = avg_daily_orders * days_into_future
 
+    # Update the restock message with rounded value
+    if forecasted_remaining_quantity < 0:
+        restock_amount = abs(forecasted_remaining_quantity)  # How much to restock
+        restock_message = f"Insufficient quantity. You will need to restock at least {round(restock_amount, 2)} units."
+    else:
+        restock_message = None
+
     # New responses added
     return Response({
         'forecast_date': forecast_date,
@@ -359,6 +366,7 @@ def inventory_forecast(request, inventory_id, forecast_date):
         'forecasted_quantity_used': round(forecasted_sales, 2),
         'forecasted_remaining_quantity': round(forecasted_remaining_quantity, 2),
         'forecasted_orders': round(forecasted_orders, 2),
+        'restock_message': restock_message
     })
 
 
