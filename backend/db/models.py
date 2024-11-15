@@ -1,3 +1,4 @@
+import random
 from django.db import models
 from datetime import datetime
 from django.utils import timezone
@@ -329,6 +330,16 @@ class Shipment(models.Model):
     est_delivery_date = models.DateField()
     order = models.ForeignKey(CustomerOrder, on_delete=models.CASCADE)  # Link to CustomerOrder
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
+
+    def save(self, *args, **kwargs):
+        # Generate a random 9-digit tracking number if not already set
+        if not self.tracking_number or self.tracking_number == "0000":
+            while True:
+                new_tracking_number = f"{random.randint(100000000, 999999999)}"
+                if not Shipment.objects.filter(tracking_number=new_tracking_number).exists():
+                    self.tracking_number = new_tracking_number
+                    break
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'Shipment {self.shipment_id} for Order {self.order}'
