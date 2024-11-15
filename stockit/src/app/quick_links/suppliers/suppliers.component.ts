@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { MyDataService } from '../../my-data.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { error } from 'console';
 
 @Component({
   selector: 'app-suppliers',
@@ -44,6 +45,32 @@ addSupplier(): void{
       console.error('Error adding supplier', error);
     }
   );
+}
+
+
+deleteSupplier(id: number): void{
+  const confirmSupplierDeletion = window.confirm('Are you sure you want to delete this suppllier?');
+  if(confirmSupplierDeletion){
+    this.myDataService.softdeleteSupplier(id).subscribe(
+      (data) => {
+        this.suppliersList = this.suppliersList.filter((supplier) => supplier.supplier_id !== id);
+      },(error)=>{
+        console.error('error SOFT deleting supplier', error);
+      }
+    );
+  }else{
+   console.log('Delete action cancelled');
+  }
+
+}
+
+updateSupplier(supplier:any){
+  console.log('supplier id updated: ',supplier.supplier_id);
+  this.myDataService.updatesSupplier(supplier).subscribe((data)=>{
+    console.log('updated',data);
+  },(error)=>{
+    console.error('error updating supplier', error);
+  });
 }
 
 resetForm(): void{

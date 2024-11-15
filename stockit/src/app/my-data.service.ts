@@ -62,9 +62,15 @@ export class MyDataService {
       return this.http.put(`${this.inventoryUrl}${item.inventory_id}/`, item);
     }
 
-    // getCategories(): Observable<any>{
-    //   return this.http.get(this.categoriesUrl);
+    getCategories():Observable<any>{
+      return this.http.get(this.categoriesUrl);
+    }
+
+    // addCategories(item:any): Observable<any>{
+    //   return this.http.post(this.categoriesUrl, item);
     // }
+
+
     addInventoryItem(item:any): Observable<any>{
       return this.http.post(this.inventoryUrl, item);
     }
@@ -103,6 +109,14 @@ export class MyDataService {
 
     addSupplier(supplier: any): Observable<any>{
       return this.http.post(this.suppliersUrl, supplier);
+    }
+
+    updatesSupplier( supplier: any): Observable<any>{
+      return this.http.put(`${this.suppliersUrl}${supplier.supplier_id}/`, supplier);
+    }
+
+    softdeleteSupplier(supplierId:number): Observable<any>{
+      return this.http.delete(`${this.suppliersUrl}${supplierId}/`)
     }
 
     getBreakdown(timeFrame: string = 'overall', breakdownType: string = 'item'): Observable<any> {
