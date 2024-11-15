@@ -78,7 +78,7 @@
                   <div class="form-group col-md-6">
                     <label for="itemCategory">Category</label>
                     <select class="form-control" name="category" id="itemCategory" [(ngModel)]="newItem.category" name="category" required>
-                        <option *ngFor="let item of inventoryList" [value]="item.category.id">
+                        <option *ngFor="let item of inventoryList" [value]="item.category">
                              {{item.category.name}}</option>
                     </select>
                   </div> 

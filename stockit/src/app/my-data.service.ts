@@ -91,6 +91,14 @@ export class MyDataService {
       return this.http.post(this.suppliersUrl, supplier);
     }
 
+    updateSupplier(supplierId: number, supplier: any): Observable<any>{
+      return this.http.put(`${this.suppliersUrl}${supplierId}`, supplier);
+    }
+
+    soft_deleteSupplier(supplierId:number): Observable<any>{
+      return this.http.delete(`${this.suppliersUrl}${supplierId}/`)
+    }
+
     getBreakdown(timeFrame: string = '24h', breakdownType: string = 'item'): Observable<any> {
       let params = new HttpParams()
         .set('time_frame', timeFrame)
