@@ -10,10 +10,10 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
 from django.shortcuts import render # Needed for audit-trail
 from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, Customer, CustomerOrder, \
-    Shipment, PurchaseOrder, ForecastingPreferences, Supplier, Category
+    Shipment, PurchaseOrder, ForecastingPreferences, Supplier, Category, Location, OrderStatus
 from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, \
     OrderItemSerializer, ShipmentSerializer, PurchaseOrderSerializer, ForecastingPreferencesSerializer, \
-    SupplierSerializer, CustomerOrderSerializer, CustomerSerializer, CategorySerializer
+    SupplierSerializer, CustomerOrderSerializer, CustomerSerializer, CategorySerializer, LocationSerializer, OrderStatusSerializer
 from decimal import Decimal  # Added because math is dumb (decimals and floats can't multiply)
 
 
@@ -525,6 +525,75 @@ def customer_order_detail(request, pk):
         order.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+# --------- LOCATION VIEWS --------- #
+
+@api_view(['GET', 'POST'])
+def location_list(request):
+    if request.method == 'GET':
+        locations = Location.objects.all()
+        serializer = LocationSerializer(locations, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        serializer = LocationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def location_detail(request, pk):
+    try:
+        location = Location.objects.get(pk=pk)
+    except Location.DoesNotExist:
+        return Response({'error': 'Location not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = LocationSerializer(location)
+        return Response(serializer.data)
+    elif request.method == 'PUT':
+        serializer = LocationSerializer(location, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        location.delete()
+        return Response({'message': 'Location deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+# --------- ORDER STATUS VIEWS --------- # 
+
+@api_view(['GET', 'POST'])
+def order_status_list(request):
+    if request.method == 'GET':
+        order_statuses = OrderStatus.objects.all()
+        serializer = OrderStatusSerializer(order_statuses, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        serializer = OrderStatusSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def order_status_detail(request, pk):
+    try:
+        order_status = OrderStatus.objects.get(pk=pk)
+    except OrderStatus.DoesNotExist:
+        return Response({'error': 'Order status not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = OrderStatusSerializer(order_status)
+        return Response(serializer.data)
+    elif request.method == 'PUT':
+        serializer = OrderStatusSerializer(order_status, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        order_status.delete()
+        return Response({'message': 'Order status deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
 
 # --------- INDEX VIEWS --------- #
 

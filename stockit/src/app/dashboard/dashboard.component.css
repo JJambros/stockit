@@ -1,0 +1,20 @@
+.quick-links {
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+.quick-links a {
+    display: inline-block;
+    color: #007bff; /* Bootstrap primary color */
+    text-decoration: none;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.quick-links a:hover {
+    background-color: #e2e6ea; /* Light gray background */
+    color: #0056b3; /* Darker blue for hover effect */
+    text-decoration: underline;
+}

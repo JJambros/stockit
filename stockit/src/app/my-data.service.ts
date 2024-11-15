@@ -45,6 +45,14 @@ export class MyDataService {
       return this.http.post<any>(`http://localhost:8000/api/orders/${orderId}/mark_shipped/`, {});
     }
 
+    getCustomerOrders(): Observable<any> {
+      return this.http.get('http://localhost:8000/api/customer-orders/');
+    }
+
+    getPurchaseOrders(): Observable<any> {
+      return this.http.get('http://localhost:8000/api/purchase-orders/');
+    }
+
     //inventory 
     getInventory(): Observable<any>{
       return this.http.get(this.inventoryUrl);
@@ -122,4 +130,20 @@ export class MyDataService {
     getInventoryForecast(inventoryId: number, forecastDate: string): Observable<any> {
       return this.http.get(`${this.inventoryForecast}/${inventoryId}/${forecastDate}/`);
     }
+
+    addPurchaseOrder(payload: any): Observable<any> {
+      return this.http.post('http://localhost:8000/api/purchase-orders/', payload);
+    }
+
+    addCustomerOrder(payload: any): Observable<any> {
+      return this.http.post('http://localhost:8000/api/customer-orders/', payload);
+    }
+
+    getLocation(): Observable<any> {
+      return this.http.get('http://localhost:8000/api/locations/');
+    }
+
+    getStatus(): Observable<any> {    
+      return this.http.get('http://localhost:8000/api/order-status/');
+    } 
 }

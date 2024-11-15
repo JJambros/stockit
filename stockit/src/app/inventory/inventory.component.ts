@@ -84,7 +84,7 @@ export class InventoryComponent implements OnInit  {
  transformDataForChart(): void {
   // Transform the inventory data into the format required by the pie chart
   this.single = this.inventoryList.map(item => ({
-    name: item.category.name, // Assuming category object has a 'name' field
+    name: item.category_name, // Assuming category object has a 'name' field
     value: item.quantity
   }));
 }

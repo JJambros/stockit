@@ -1,38 +1,145 @@
+<link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alice&amp;display=swap">
+<link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
+<link rel="stylesheet" href="assets/css/Search-Field-With-Icon.css">
 
-    <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Alice&amp;display=swap">
-    <link rel="stylesheet" href="assets/fonts/fontawesome-all.min.css">
-    <link rel="stylesheet" href="assets/css/Search-Field-With-Icon.css">
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar with Toggle Buttons -->
+    <div class="col-2 bg-light vh-15 p-3">
+      <h5>Order Type</h5>
+      <button class="btn btn-primary w-100 mb-2" (click)="showTable('purchase')">Purchase Orders</button>
+      <button class="btn btn-secondary w-100" (click)="showTable('customer')">Customer Orders</button>
+    </div>
 
-    <div class="search-container" style="padding-left: 150px;padding-right: 150px;"><input type="text" class="search-input" name="search-bar" placeholder="Search..."><button class="btn btn-light search-btn" type="button"> <i class="fa fa-search"></i></button></div>
-    <div class="table-responsive" style="padding-left: 150px;padding-right: 150px;">
+    <!-- Main Content Area -->
+    <div class="col-10 p-3">
+      <!-- Search Bar -->
+      <!-- <div class="search-container" style="padding-left: 20px; padding-right: 20px;">
+        <input type="text" class="search-input" name="search-bar" placeholder="Search...">
+        <button class="btn btn-light search-btn" type="button">
+          <i class="fa fa-search"></i>
+        </button>
+      </div> -->
+
+      <!-- Purchase Orders Table -->
+      <div *ngIf="activeTable === 'purchase'" class="table-responsive" style="padding-left: 20px; padding-right: 20px;">
+        <h3>Purchase Orders</h3>
         <table class="table">
             <thead>
-                <tr class="table-primary">
-                    <th>Order ID</th>
-                    <th>Tracking Number</th>
-                    <th>Estimated Arrival</th>
-                    <th>Shipping Company</th>
-                    <!-- <th>Order Status</th> -->
-                    <th>Actions</th>
-                </tr>
+                <th>Order Quantity</th>
+                <th>Order Date</th>
+                <th>Inventory</th>
+                <th>Supplier</th>
+                <th></th>
             </thead>
             <tbody>
-                <tr class="table-light" *ngFor="let order of orders">
-                    <td>{{order.order}}</td>
-                    <td>{{order.tracking_number}}</td>
-                    <td>{{order.est_delivery_date}}</td>
-                    <td>{{order.shipping_company}}</td>
-                    <!-- <td>{{order.current_status}}</td> -->
+                <tr class="table-light">
                     <td>
-                        <!-- Add button to mark order as shipped -->
-                        <button class="btn btn-success" (click)="markAsShipped(order.order)">Mark as Shipped</button>
+                        <input type="number" class="form-control" [(ngModel)]="newOrder.order_quantity" name="orderQuantity" style="width: 80px;" required />
                     </td>
-                </tr>
-                <tr *ngIf="orders?.length === 0">
-                    <td>no orders available</td>
+                    <td>
+                        <input type="date" class="form-control" [(ngModel)]="newOrder.po_date" [value]="today" readonly style="width: 140px;" />
+                    </td>
+                    <td>
+                        <select class="form-select" [(ngModel)]="newOrder.inventory" name="inventorySelect" required>
+                            <option *ngFor="let item of inventoryItems" [value]="item.inventory_id">{{ item.name }}</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="form-select" [(ngModel)]="newOrder.supplier" name="supplierSelect" required>
+                            <option *ngFor="let supplier of suppliers" [value]="supplier.supplier_id">{{ supplier.supplier_name }}</option>
+                        </select>
+                    </td>
+                    <td><button class="btn btn-primary btn-sm reset" type="button" (click)="addPurchaseOrder()">Add Order</button></td>
                   </tr>
             </tbody>
         </table>
+        <table class="table">
+          <thead>
+            <tr class="table-primary">
+              <th>Order Quantity</th>
+              <th>Order Date</th>
+              <th>Inventory</th>
+              <th>Supplier</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="table-light" *ngFor="let order of purchaseOrders">
+              <td>{{ order.order_quantity }}</td>
+              <td>{{ order.po_date }}</td>
+              <td>{{ order.inventory_name }}</td>
+              <td>{{ order.supplier_name }}</td>
+            </tr>
+            <tr *ngIf="purchaseOrders?.length === 0">
+              <td colspan="5">No purchase orders available</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Customer Orders Table -->
+      <div *ngIf="activeTable === 'customer'" class="table-responsive" style="padding-left: 20px; padding-right: 20px;">
+        <h3>Customer Orders</h3>
+        <table class="table">
+          <thead>
+              <th>From:</th>
+              <th>To:</th>
+              <th>Order Date</th>
+              <th>Location</th>
+              <th>Status</th>
+          </thead>
+          <tbody>
+              <tr class="table-light">
+                  <td>
+                      <input type="string" class="form-control" [(ngModel)]="newCustomerOrder.co_from" name="coFrom" style="width: 160px;" required />
+                  </td>
+                  <td>
+                    <input type="string" class="form-control" [(ngModel)]="newCustomerOrder.co_to" name="coTo" style="width: 160px;" required />
+                  </td>
+                  <td>
+                      <input type="date" class="form-control" [(ngModel)]="newCustomerOrder.co_date" [value]="today" readonly style="width: 140px;" />
+                  </td>
+                  <td>
+                      <select class="form-select" [(ngModel)]="newCustomerOrder.co_location" name="locationSelect" required>
+                          <option *ngFor="let location of location" [value]="location.location_id">{{ location.address }}</option>
+                      </select>
+                  </td>
+                  <td>
+                      <select class="form-select" [(ngModel)]="newCustomerOrder.co_status" name="statusSelect" required>
+                          <option *ngFor="let status of status" [value]="status.status_id">{{ status.current_status }}</option>
+                      </select>
+                  </td>
+                  <td><button class="btn btn-primary btn-sm reset" type="button" (click)="addCustomerOrder()">Add Order</button></td>
+                </tr>
+          </tbody>
+      </table>
+        <table class="table">
+          <thead>
+            <tr class="table-primary">
+              <th>From:</th>
+              <th>To:</th>
+              <th>Order Date</th>
+              <th>Location</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="table-light" *ngFor="let order of customerOrders">
+              <td>{{ order.from_company }}</td>
+              <td>{{ order.to_company }}</td>
+              <td>{{ order.customer_order_date }}</td>
+              <td>{{ order.location_name }}</td>
+              <td>{{ order.status_display }}</td>
+            </tr>
+            <tr *ngIf="customerOrders?.length === 0">
+              <td colspan="5">No customer orders available</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-    <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+  </div>
+</div>
+
+<script src="assets/bootstrap/js/bootstrap.min.js"></script>
