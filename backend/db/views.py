@@ -72,9 +72,42 @@ def profile_detail(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# --------- REGISTER USER VIEWS --------- #
+
+@api_view(['POST'])
+@permission_classes([AllowAny])  # Allow unauthenticated access
+def register_user(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    if not username or not password:
+        return Response({'error': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if User.objects.filter(username=username).exists():
+        return Response({'error': 'Username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    user = User.objects.create_user(username=username, password=password)
+    return Response({'message': 'User registered successfully!'}, status=status.HTTP_201_CREATED)
+
+# --------- UPDATE PASSWORD VIEWS --------- #
+
+@api_view(['PUT'])
+def update_password(request):
+    user = request.user
+    old_password = request.data.get('old_password')
+    new_password = request.data.get('new_password')
+
+    if not old_password or not new_password:
+        return Response({'error': 'Old and new passwords are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if not user.check_password(old_password):
+        return Response({'error': 'Old password is incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    user.set_password(new_password)
+    user.save()
+    return Response({'message': 'Password updated successfully.'}, status=status.HTTP_200_OK)
+
 # --------- INVENTORY VIEWS --------- #
 
-# List all inventory items or add a new item
 @api_view(['GET', 'POST'])
 def inventory_list(request):
     if request.method == 'GET':
@@ -91,22 +124,20 @@ def inventory_list(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-# Retrieve, update, or soft-delete a specific inventory item
 @api_view(['GET', 'PUT', 'DELETE'])
 def inventory_detail(request, pk):
     try:
-        inventory = Inventory.objects.get(pk=pk, is_deleted=False)
+        inventory = Inventory.objects.get(pk=pk, is_deleted=False)  # Ensure the item is not soft-deleted
     except Inventory.DoesNotExist:
-        return Response({'error': 'Inventory not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'Inventory item not found.'}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        # Return inventory item details
+        # Retrieve a single inventory item
         serializer = InventorySerializer(inventory)
         return Response(serializer.data)
 
     elif request.method == 'PUT':
-        # Update inventory item
+        # Update an inventory item
         serializer = InventorySerializer(inventory, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -114,10 +145,11 @@ def inventory_detail(request, pk):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
-        # Soft delete the inventory item
+        # Soft-delete an inventory item
         inventory.is_deleted = True
         inventory.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Inventory item soft-deleted.'}, status=status.HTTP_204_NO_CONTENT)
+
 
 # --------- CATEGORY VIEWS --------- #
 

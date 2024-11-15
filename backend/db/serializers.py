@@ -21,11 +21,15 @@ class CategorySerializer(serializers.ModelSerializer):
 
 # Inventory Serializer
 class InventorySerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
+    category_name = serializers.CharField(source='category.name', read_only=True)  # Display category name in responses
+
     class Meta:
         model = Inventory
-        fields = '__all__'
-        extra_kwargs = {'is_deleted': {'read_only': True}}  # Make 'is_deleted' read-only
+        fields = ['inventory_id', 'name', 'cost', 'price', 'quantity', 'forecast_level', 'category', 'category_name', 'is_deleted']
+        extra_kwargs = {
+            'is_deleted': {'read_only': True},  # Prevent direct modification of `is_deleted`
+            'category': {'write_only': True},  # Allow setting `category` by ID in requests
+        }
 
 # Customer Serializer
 class CustomerSerializer(serializers.ModelSerializer):
