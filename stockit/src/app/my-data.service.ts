@@ -20,6 +20,7 @@ export class MyDataService {
   private suppliersUrl = 'http://localhost:8000/api/suppliers/';
   private categoriesUrl = 'http://localhost:8000/api/categories/';
   private dashboardBreakdown = 'http://localhost:8000/api/dashboard/total-breakdown/';
+  private inventoryForecast = 'http://localhost:8000/api/inventory/forecast';
   //
   constructor(private http: HttpClient) { }
 
@@ -35,8 +36,13 @@ export class MyDataService {
       return this.http.get(this.auditUrl);
     }
 
+    // Orders page
     getOrders(): Observable<any>{
       return this.http.get(this.orderUrl);
+    }
+
+    markOrderAsShipped(orderId: number): Observable<any> {
+      return this.http.post<any>(`http://localhost:8000/api/orders/${orderId}/mark_shipped/`, {});
     }
 
     //inventory 
@@ -99,11 +105,15 @@ export class MyDataService {
       return this.http.delete(`${this.suppliersUrl}${supplierId}/`)
     }
 
-    getBreakdown(timeFrame: string = '24h', breakdownType: string = 'item'): Observable<any> {
+    getBreakdown(timeFrame: string = 'overall', breakdownType: string = 'item'): Observable<any> {
       let params = new HttpParams()
         .set('time_frame', timeFrame)
         .set('breakdown_type', breakdownType);
   
       return this.http.get<any>(this.dashboardBreakdown, { params });
+    }
+
+    getInventoryForecast(inventoryId: number, forecastDate: string): Observable<any> {
+      return this.http.get(`${this.inventoryForecast}/${inventoryId}/${forecastDate}/`);
     }
 }

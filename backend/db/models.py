@@ -1,3 +1,4 @@
+import random
 from django.db import models
 from datetime import datetime
 from django.utils import timezone
@@ -126,18 +127,49 @@ class InventoryHistory(models.Model):
     def __str__(self):
         return f'{self.transaction_type} of {self.quantity} units on {self.transaction_date}'
 
-    
+# Supplier model to hold information about the Supplier
+class Supplier(models.Model):
+    supplier_id = models.AutoField(primary_key=True)
+    supplier_name = models.CharField(max_length=50)
+    contact_email = models.EmailField(max_length=50)
+    contact_phone = models.CharField(max_length=20)
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
+
+    def __str__(self):
+        return self.supplier_name
+
+# Supplier model to hold information about the Suppliers orders
+class SupplierOrder(models.Model):
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    product = models.ForeignKey(Inventory, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    status = models.CharField(max_length=20, default='Pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.supplier} - {self.product} - {self.quantity}'
+
 # ForecastingPreferences model to store information about the user's forecasting preferences
 class ForecastingPreferences(models.Model):
     preference_id = models.AutoField(primary_key=True)
     forecast_time_range = models.CharField(max_length=50)
     desired_safety_stock = models.IntegerField()
-    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Link to User
-    inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
-    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
+    inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)
+    
+    # New fields for extended forecasting options
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
+    supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True)
+    trend_direction = models.CharField(max_length=10, choices=[('increase', 'Increase'), ('decrease', 'Decrease')], null=True, blank=True)
+    trend_percent = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    
+    is_deleted = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'Forecasting Preferences {self.forecast_time_range} for {self.inventory}'
+        return f'Forecasting Preferences for {self.user}'
 
 # ForecastResults model to store information about the Forecasting Results
 class ForecastResults(models.Model):
@@ -217,28 +249,6 @@ class OrderStatus(models.Model):
 
     def __str__(self):
         return f'Status {self.status_id}'
-
-# Supplier model to hold information about the Supplier
-class Supplier(models.Model):
-    supplier_id = models.AutoField(primary_key=True)
-    supplier_name = models.CharField(max_length=50)
-    contact_email = models.EmailField(max_length=50)
-    contact_phone = models.CharField(max_length=20)
-    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
-
-    def __str__(self):
-        return self.supplier_name
-
-# Supplier model to hold information about the Suppliers orders
-class SupplierOrder(models.Model):
-    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
-    product = models.ForeignKey(Inventory, on_delete=models.CASCADE)
-    quantity = models.IntegerField()
-    status = models.CharField(max_length=20, default='Pending')
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f'{self.supplier} - {self.product} - {self.quantity}'
 
     # ReorderThreshold model to hold information on the threshold for a reorder
 class ReorderThreshold(models.Model):
@@ -320,6 +330,16 @@ class Shipment(models.Model):
     est_delivery_date = models.DateField()
     order = models.ForeignKey(CustomerOrder, on_delete=models.CASCADE)  # Link to CustomerOrder
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
+
+    def save(self, *args, **kwargs):
+        # Generate a random 9-digit tracking number if not already set
+        if not self.tracking_number or self.tracking_number == "0000":
+            while True:
+                new_tracking_number = f"{random.randint(100000000, 999999999)}"
+                if not Shipment.objects.filter(tracking_number=new_tracking_number).exists():
+                    self.tracking_number = new_tracking_number
+                    break
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'Shipment {self.shipment_id} for Order {self.order}'

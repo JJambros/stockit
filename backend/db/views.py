@@ -1,6 +1,6 @@
 from django.utils import timezone  # Added for dashboard (net calcs)
 from datetime import datetime, timedelta  # Added for forecasting and dashboard (net calcs)
-from django.db.models import Avg, Sum, F, Q, Count  # Added for forecasting and dashboard (net calcs & breakdown)
+from django.db.models import Avg, Sum, F, Q  # Added for forecasting and dashboard (net calcs & breakdown)
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -8,6 +8,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
+from django.shortcuts import render # Needed for audit-trail
 from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, Customer, CustomerOrder, \
     Shipment, PurchaseOrder, ForecastingPreferences, Supplier, Category
 from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, \
@@ -287,54 +288,65 @@ def dashboard_detail(request, pk):
 
 # --------- INVENTORY FORECAST VIEWS --------- #
 
+from decimal import Decimal
+from datetime import datetime, timedelta
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+
 @api_view(['GET'])
 def inventory_forecast(request, inventory_id, forecast_date):
     try:
-        inventory = Inventory.objects.get(inventory_id=inventory_id, is_deleted=False)  # Check for soft deletion
+        inventory = Inventory.objects.get(inventory_id=inventory_id, is_deleted=False)
     except Inventory.DoesNotExist:
         return Response({'error': 'Inventory not found'}, status=404)
 
-    # Convert the input forecast_date to a date object
     try:
         forecast_date = datetime.strptime(forecast_date, '%Y-%m-%d').date()
     except ValueError:
         return Response({'error': 'Invalid date format. Use YYYY-MM-DD.'}, status=400)
 
-    # Fetch historical sales data (past 3 months)
-    three_months_ago = datetime.now().date() - timedelta(days=90)
+    # Get query parameters with default values
+    trend_direction = request.query_params.get('trend_direction')
+    trend_percent = Decimal(request.query_params.get('trend_percent', 0)) / 100
+    start_date = request.query_params.get('start_date')
+    end_date = request.query_params.get('end_date')
+
+    # Convert dates if provided
+    if start_date:
+        start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+    else:
+        start_date = datetime.now().date() - timedelta(days=90)  # Default 3 months
+
+    if end_date:
+        end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+    else:
+        end_date = datetime.now().date()
+
+    # Fetch historical data within the date range
     sales_history = InventoryHistory.objects.filter(
         inventory=inventory,
         transaction_type='sale',
-        transaction_date__gte=three_months_ago
+        transaction_date__range=(start_date, end_date)
     )
 
     if not sales_history.exists():
         return Response({'error': 'Not enough historical data for forecasting'}, status=400)
 
-    # Calculate the average daily sales
     avg_daily_sales = sales_history.aggregate(Avg('quantity'))['quantity__avg']
-
-    # Calculate the number of days between today and the forecast date
     days_into_future = (forecast_date - datetime.now().date()).days
+    forecasted_sales = Decimal(avg_daily_sales * days_into_future)
 
-    # Forecasted sales and quantity used
-    forecasted_sales = avg_daily_sales * days_into_future
+    # Apply trend adjustment
+    if trend_direction == 'increase':
+        forecasted_sales *= (1 + trend_percent)
+    elif trend_direction == 'decrease':
+        forecasted_sales *= (1 - trend_percent)
+
     forecasted_remaining_quantity = inventory.quantity - forecasted_sales
-
-    # Calculate profit as (price - cost) * forecasted quantity sold
-    forecasted_profit = (Decimal(inventory.price) - Decimal(inventory.cost)) * Decimal(forecasted_sales)
+    forecasted_profit = (Decimal(inventory.price) - Decimal(inventory.cost)) * forecasted_sales
     forecasted_expenses = Decimal(forecasted_sales) * Decimal(inventory.cost)
-
-    # Calculate the estimated number of orders based on historical order data
-    avg_daily_orders = sales_history.count() / 90  # Orders per day, based on the last 3 months
+    avg_daily_orders = sales_history.count() / 90
     forecasted_orders = avg_daily_orders * days_into_future
-
-    # Updated response with rounding to 2 decimal places
-    forecasted_profit = round(float(forecasted_profit), 2)
-    forecasted_expenses = round(float(forecasted_expenses), 2)
-    forecasted_quantity_used = round(forecasted_sales, 2)
-    forecasted_remaining_quantity = round(forecasted_remaining_quantity, 2)
-    forecasted_orders = round(forecasted_orders, 2)
 
     # Update the restock message with rounded value
     if forecasted_remaining_quantity < 0:
@@ -343,9 +355,13 @@ def inventory_forecast(request, inventory_id, forecast_date):
     else:
         restock_message = None
 
-    # Return the forecast results
+    # New responses added
     return Response({
         'forecast_date': forecast_date,
+        'trend_direction': trend_direction,
+        'trend_percent': float(trend_percent) * 100,  # Convert back for display
+        'start_date': start_date,
+        'end_date': end_date,
         'forecasted_profit': round(float(forecasted_profit), 2),
         'forecasted_expenses': round(float(forecasted_expenses), 2),
         'forecasted_quantity_used': round(forecasted_sales, 2),
@@ -353,6 +369,17 @@ def inventory_forecast(request, inventory_id, forecast_date):
         'forecasted_orders': round(forecasted_orders, 2),
         'restock_message': restock_message
     })
+
+
+# --------- FORECASTING ADJUST (due to special conditions) --------- #
+
+@api_view(['POST'])
+def adjust_forecast(request):
+    serializer = ForecastingPreferencesSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # --------- FORECASTING PREFERENCES VIEWS  --------- #
@@ -413,12 +440,19 @@ def audit_log_view(request):
 
 # --------- ORDER ITEM VIEWS --------- #
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def order_item_list(request):
-    order_items = OrderItem.objects.filter(is_deleted=False)  # Exclude soft-deleted items
-    serializer = OrderItemSerializer(order_items, many=True)
-    return Response(serializer.data)
-
+    if request.method == 'GET':
+        order_items = OrderItem.objects.filter(is_deleted=False)
+        serializer = OrderItemSerializer(order_items, many=True)
+        return Response(serializer.data)
+    
+    elif request.method == 'POST':
+        serializer = OrderItemSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # --------- CUSTOMER ORDER VIEWS --------- #
 @api_view(['GET', 'POST'])
@@ -800,4 +834,42 @@ def supplier_detail(request, pk):
     elif request.method == 'DELETE':
         supplier.is_deleted = True
         supplier.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+# --------- PURCHASE ORDERS VIEWS --------- # 
+
+@api_view(['GET', 'POST'])
+def purchase_order_list(request):
+    # List all purchase orders or create one
+    if request.method == 'GET':
+        purchase_orders = PurchaseOrder.objects.filter(is_deleted=False)
+        serializer = PurchaseOrderSerializer(purchase_orders, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        serializer = PurchaseOrderSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def purchase_order_detail(request, pk):
+    # Retrieve, update, or soft-delete a specific purchase order
+    try:
+        purchase_order = PurchaseOrder.objects.get(pk=pk, is_deleted=False)
+    except PurchaseOrder.DoesNotExist:
+        return Response({'error': 'Purchase Order not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = PurchaseOrderSerializer(purchase_order)
+        return Response(serializer.data)
+    elif request.method == 'PUT':
+        serializer = PurchaseOrderSerializer(purchase_order, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        purchase_order.is_deleted = True
+        purchase_order.save()
         return Response(status=status.HTTP_204_NO_CONTENT)

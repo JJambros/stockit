@@ -120,6 +120,10 @@ class SupplierSerializer(serializers.ModelSerializer):
 
 # PurchaseOrder Serializer
 class PurchaseOrderSerializer(serializers.ModelSerializer):
+    # Char.Field supplier_name and inventory_name so that the name appears instead of the db ID number
+    supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True) 
+    inventory_name = serializers.CharField(source='inventory.name', read_only=True)
+
     class Meta:
         model = PurchaseOrder
         fields = '__all__'
@@ -135,11 +139,16 @@ class NotificationsSerializer(serializers.ModelSerializer):
 # Order Item Serializer
 class OrderItemSerializer(serializers.ModelSerializer):
     inventory_name = serializers.CharField(source='inventory.name', read_only=True)
+    order_name = serializers.CharField(source='order.to_company', read_only=True)
 
     class Meta:
         model = OrderItem
-        fields = '__all__'
-        extra_kwargs = {'is_deleted': {'read_only': True}}
+        fields = ['order_item_id', 'inventory', 'inventory_name', 'order', 'order_name', 'quantity', 'is_deleted']
+        extra_kwargs = {
+            'is_deleted': {'read_only': True},
+            'inventory': {'write_only': True},  # Make 'inventory' and 'order' writable
+            'order': {'write_only': True}
+        }
 
 # Customer Order Serializer
 class CustomerOrderSerializer(serializers.ModelSerializer):

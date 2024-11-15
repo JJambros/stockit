@@ -19,7 +19,7 @@
                                 <ng-container *ngFor="let item of inventoryList">
                                     <tr *ngIf="item.quantity < item.forecast_level">
                                         <td>{{ item.name }}</td>
-                                        <td style="text-align: right;"><button class="btn btn-alert" (click)="edit(item)">Edit</button></td>  
+                                        <td style="text-align: right;"><button class="btn btn-alert" (click)="editAlert(item)">Edit</button></td>  
                                     </tr>
                                 </ng-container>
                             </tbody>
@@ -27,20 +27,20 @@
                     </div>
                 </div>
             </div>
-            <div class="col">
-                <div class="card" style="padding-top: 30px;padding-bottom: 30px;border-style: none;padding-right: 16px;padding-left: 16px;">
-                    <div class="card-header" style="box-shadow: 0px 0px 5px var(--bs-secondary-color);">
-                        <h5 class="mb-0">Problem Pars</h5>
-                    </div>
-                    <div class="card-body" style="border-width: 0px;box-shadow: 0px 0px 5px var(--bs-secondary-color);">
-                        <p class="card-text" style="border-right-width: 1px;">Quick action links here.<br><br><br><span style="font-weight: normal !important; font-style: normal !important;">Make this a table with a button.</span><br><br></p>
-                    </div>
-                </div>
-            </div>
+            
         </div>
     </div>
     <div class="col">
-        <p style="text-align: center;">Nice chart goes here</p>
+        <ngx-charts-pie-chart
+  [view]="[700, 400]"
+  [results]="single"
+  [gradient]="gradient"
+  [legend]="showLegend"
+  [doughnut]="isDoughnut"
+  (select)="onSelect($event)"
+  (activate)="onActivate($event)"
+  (deactivate)="onDeactivate($event)">
+</ngx-charts-pie-chart>
     </div>
 </div>
 <div class="container-fluid">
@@ -154,3 +154,4 @@
         </div>
     </div>
 </div>
+
