@@ -1,7 +1,7 @@
 from rest_framework import serializers 
 from .models import (Profile, Inventory, Customer, Dashboard, Location, InventoryHistory, 
                      ForecastingPreferences, ForecastResults, DashboardReports, DashboardVisuals, 
-                     ReportDateRange, UserDashSettings, OrderStatus, ReorderThreshold, Supplier,
+                     ReportDateRange, UserDashSettings, OrderStatus, ReorderThreshold, Supplier, SupplierOrder,
                      PurchaseOrder, Notifications, CustomerOrder, OrderItem, Shipment, AuditTrail,
                      WorksOn, Category)
 
@@ -121,6 +121,20 @@ class SupplierSerializer(serializers.ModelSerializer):
         model = Supplier
         fields = '__all__'
         extra_kwargs = {'is_deleted': {'read_only': True}}
+
+# SupplierOrder Serializer
+class SupplierOrderSerializer(serializers.ModelSerializer):
+    supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
+    product_name = serializers.CharField(source='product.name', read_only=True)
+
+    class Meta:
+        model = SupplierOrder
+        fields = ['supplier_order_id', 'supplier', 'supplier_name', 'product', 'product_name', 'quantity', 'status',
+                  'created_at']
+        extra_kwargs = {
+            'status': {'read_only': False},
+            'created_at': {'read_only': True}
+        }
 
 # PurchaseOrder Serializer
 class PurchaseOrderSerializer(serializers.ModelSerializer):
