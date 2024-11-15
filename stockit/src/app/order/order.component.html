@@ -101,16 +101,16 @@
                       <input type="date" class="form-control" [(ngModel)]="newCustomerOrder.co_date" [value]="today" readonly style="width: 140px;" />
                   </td>
                   <td>
-                      <select class="form-select" [(ngModel)]="newOrder.inventory" name="inventorySelect" required>
-                          <option *ngFor="let item of inventoryItems" [value]="item.inventory_id">{{ item.name }}</option>
+                      <select class="form-select" [(ngModel)]="newCustomerOrder.co_location" name="locationSelect" required>
+                          <option *ngFor="let location of location" [value]="location.location_id">{{ location.address }}</option>
                       </select>
                   </td>
                   <td>
-                      <select class="form-select" [(ngModel)]="newOrder.supplier" name="supplierSelect" required>
-                          <option *ngFor="let supplier of suppliers" [value]="supplier.supplier_id">{{ supplier.supplier_name }}</option>
+                      <select class="form-select" [(ngModel)]="newCustomerOrder.co_status" name="statusSelect" required>
+                          <option *ngFor="let status of status" [value]="status.status_id">{{ status.current_status }}</option>
                       </select>
                   </td>
-                  <td><button class="btn btn-primary btn-sm reset" type="button" (click)="addPurchaseOrder()">Add Order</button></td>
+                  <td><button class="btn btn-primary btn-sm reset" type="button" (click)="addCustomerOrder()">Add Order</button></td>
                 </tr>
           </tbody>
       </table>

@@ -35,7 +35,8 @@ export class OrderComponent implements OnInit {
     co_from: '',
     co_to: '',
     co_date: '',
-
+    co_location: null,
+    co_status: null
   };
 
   constructor(private myDataService: MyDataService){}
@@ -71,7 +72,19 @@ export class OrderComponent implements OnInit {
       (error) => console.error('error fetching suppliers', error)
     );
 
-    
+    this.myDataService.getLocation().subscribe(
+      (data: string[]) => {
+        this.location = data;
+      },
+      (error) => console.error('error fetching locations', error)
+    );
+
+    this.myDataService.getStatus().subscribe(
+      (data: string[]) => {
+        this.status = data;
+      },
+      (error) => console.error('error fetching status', error)
+    );
 
     this.newOrder.po_date = this.today;
     this.newCustomerOrder.co_date = this.today;
@@ -133,6 +146,45 @@ export class OrderComponent implements OnInit {
         po_date: this.today,
         inventory: null,
         supplier: null
+      };
+    },
+    (error) => {
+      console.error('Error adding purchase order:', error, 'Payload:', payload);
+      alert('Failed to add purchase order. Please try again.');
+    }
+  );
+}
+
+addCustomerOrder(): void {
+  // Validate the input fields
+  if (!this.newCustomerOrder.co_from || !this.newCustomerOrder.co_to) {
+    alert('Please fill out all fields.');
+    return;
+  }
+
+  // Prepare the payload to send to the backend
+  const payload = {
+    from_company: this.newCustomerOrder.co_from,
+    to_company: this.newCustomerOrder.co_to,
+    customer_order_date: this.newCustomerOrder.co_date,
+    eta: this.newCustomerOrder.co_date,
+    location: Number(this.newCustomerOrder.co_location),  // send the location ID
+    status: Number(this.newCustomerOrder.co_status),     // send the status ID
+    customer: 1
+  };
+
+  // Call the service to add the purchase order
+  this.myDataService.addCustomerOrder(payload).subscribe(
+    (response) => {
+      console.log('Customer order added successfully:', response);
+
+      // Reset form fields
+      this.newCustomerOrder = {
+        co_from: '',
+        co_to: '',
+        co_date: this.today,
+        co_location: null,
+        co_status: null
       };
     },
     (error) => {

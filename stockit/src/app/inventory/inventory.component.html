@@ -19,7 +19,7 @@
                                 <ng-container *ngFor="let item of inventoryList">
                                     <tr *ngIf="item.quantity < item.forecast_level">
                                         <td>{{ item.name }}</td>
-                                        <td style="text-align: right;"><button class="btn btn-alert" (click)="editAlert(item)">Edit</button></td>  
+                                        <td style="text-align: right;"><button class="btn btn-alert" (click)="editAlert(item)">Low</button></td>  
                                     </tr>
                                 </ng-container>
                             </tbody>
@@ -122,7 +122,7 @@
                                 <!-- wait for sku -->
                                 <!-- <td>{{item.inventory_id}}</td> -->
                                 <td>{{item.name}}</td>
-                                <td>{{item.category.name}}</td>
+                                <td>{{item.category_name}}</td>
                                 <td>{{item.forecast_level}}</td>
                                 <td>
                                     <div *ngIf="item.editQ">

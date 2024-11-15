@@ -124,4 +124,12 @@ export class MyDataService {
     addCustomerOrder(payload: any): Observable<any> {
       return this.http.post('http://localhost:8000/api/customer-orders/', payload);
     }
+
+    getLocation(): Observable<any> {
+      return this.http.get('http://localhost:8000/api/locations/');
+    }
+
+    getStatus(): Observable<any> {    
+      return this.http.get('http://localhost:8000/api/order-status/');
+    } 
 }
