@@ -65,6 +65,14 @@ urlpatterns = [
     path('customer-orders/', views.customer_order_list, name='customer-order-list'),
     path('customer-orders/<int:pk>/', views.customer_order_detail, name='customer-order-detail'),
 
+    # Location URLs
+    path('locations/', views.location_list, name='location-list'),
+    path('locations/<int:pk>/', views.location_detail, name='location-detail'),
+
+    # OrderStatus URLs
+    path('order-status/', views.order_status_list, name='order-status-list'),
+    path('order-status/<int:pk>/', views.order_status_detail, name='order-status-detail'),
+
     # Shipment related URLs
     path('shipments/', views.shipment_list, name='shipment-list'),  # List and create shipments
     path('shipments/<int:pk>/', views.shipment_detail, name='shipment-detail'),  # Retrieve, update, delete specific shipment
