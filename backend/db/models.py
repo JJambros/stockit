@@ -60,7 +60,7 @@ class Inventory(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.IntegerField()
     forecast_level = models.IntegerField()
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)  # Link to Category
+    category=models.ForeignKey(Category, on_delete=models.CASCADE, null=True)  # Link to Category
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
