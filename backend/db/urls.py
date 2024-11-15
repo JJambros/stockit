@@ -12,6 +12,12 @@ urlpatterns = [
     # Profile URL (viewing/updating the logged-in user's profile)
     path('profile/', views.profile_detail, name='profile-detail'),
 
+    # Register User URL
+    path('register/', views.register_user, name='register'),
+
+    # Change Password URL
+    path('update-password/', views.update_password, name='update-password'),
+
     # Inventory URLs
     path('inventory/', views.inventory_list, name='inventory-list'),  # List and create inventory items
     path('inventory/<int:pk>/', views.inventory_detail, name='inventory-detail'),  # Get, update, delete specific item
