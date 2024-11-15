@@ -139,11 +139,16 @@ class NotificationsSerializer(serializers.ModelSerializer):
 # Order Item Serializer
 class OrderItemSerializer(serializers.ModelSerializer):
     inventory_name = serializers.CharField(source='inventory.name', read_only=True)
+    order_name = serializers.CharField(source='order.to_company', read_only=True)
 
     class Meta:
         model = OrderItem
-        fields = '__all__'
-        extra_kwargs = {'is_deleted': {'read_only': True}}
+        fields = ['order_item_id', 'inventory', 'inventory_name', 'order', 'order_name', 'quantity', 'is_deleted']
+        extra_kwargs = {
+            'is_deleted': {'read_only': True},
+            'inventory': {'write_only': True},  # Make 'inventory' and 'order' writable
+            'order': {'write_only': True}
+        }
 
 # Customer Order Serializer
 class CustomerOrderSerializer(serializers.ModelSerializer):
