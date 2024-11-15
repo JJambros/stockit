@@ -1,3 +1,5 @@
+
+
 import { Component, OnInit, NgModule } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { MyDataService } from '../my-data.service';
@@ -25,6 +27,7 @@ export class InventoryComponent implements OnInit  {
  inventoryList: any[] =[];
  categories: any[] =[];
  showInvenoryForm: boolean = false; //default doesn't display form
+//  showCategoryForm: boolean = false;
  showModal: boolean = false;  // Flag to show/hide modal
  selectedItem: any = {};  // Holds the selected inventory item
 
@@ -37,6 +40,11 @@ export class InventoryComponent implements OnInit  {
   forecast_level:'',
   category: '',
  };
+
+//  newCategory={
+//   name:'',
+//   description:'',
+//  };
 
  // Pie chart options
  single: any[] = [];
@@ -64,7 +72,7 @@ export class InventoryComponent implements OnInit  {
   this.myDataService.getInventory().subscribe(
     (data) => {
       //console to see items.______
-      //console.log('got inventory data', data);
+      // console.log('got inventory data', data);
       this.inventoryList = Array.isArray(data) ? data : [];
       this.transformDataForChart();
     },
@@ -124,6 +132,17 @@ addInventory(): void{
     console.error('error adding new inventory',error);
   });
 }
+
+// addCategory(): void{
+//   console.log('new category: ', this.newCategory);
+//   this.myDataService.addCategories(this.newCategory).subscribe(()=>{
+//     this.apiInventory();
+//     this.showCategoryForm = false;
+//     alert('category created sucessfully');
+//   },(error)=>{
+//     console.error('error adding new category',error);
+//   });
+// }
 
  updateItemQuantity(item: any){
   this.myDataService.updateInventoryItem(item).subscribe(

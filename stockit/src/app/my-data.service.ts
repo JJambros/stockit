@@ -58,6 +58,11 @@ export class MyDataService {
       return this.http.get(this.categoriesUrl);
     }
 
+    // addCategories(item:any): Observable<any>{
+    //   return this.http.post(this.categoriesUrl, item);
+    // }
+
+
     addInventoryItem(item:any): Observable<any>{
       return this.http.post(this.inventoryUrl, item);
     }

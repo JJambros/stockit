@@ -1,3 +1,6 @@
+<link rel="stylesheet" href="css/Search-Field-With-Icon.css">
+
+
 <div class="row">
     <div class="col">
         <div class="row">
@@ -49,9 +52,26 @@
             <div class="search-container" style="padding-left: 150px;padding-right: 150px;"><input type="text" class="search-input" name="search-bar" placeholder="Search..."><button class="btn btn-light search-btn" type="button"> <i class="fa fa-search"></i></button></div>
         </div>
         
-        <div class="col-12 col-sm-6 col-md-6 text-end" style="margin-bottom: 30px;"><a class="btn btn-primary" role="button" (click)="showInvenoryForm = !showInvenoryForm"><i class="fa fa-plus"></i>&nbsp;Add Inventory</a></div>
+        <div class="col-12 col-sm-6 col-md-6 text-end" >
+            <a class="btn btn-primary" role="button" (click)="showInvenoryForm = !showInvenoryForm"><i class="fa fa-plus"></i>&nbsp;Add Inventory</a>
+            <!-- <a class="btn btn-primary" role="button" (click)="showCategoryForm = !showCategoryForm">&nbsp;Add Category</a> -->
+        </div>
+        
 
-        <div *ngIf="showInvenoryForm" class="card">
+        <!-- <div class="rf-register-form" style="margin-left: 80px;margin-right: 80px;margin-top: 60px;" *ngIf="showCategoryForm">
+            <form (ngSubmit)="addCategory()" class="rg-form">
+                <h2>Create new category for new products</h2>
+                <div class="rf-input-container"><i>Category Name</i>
+                    <input class="form-control rf-input-field" type="text" [(ngModel)]="newCategory.name"  >
+                </div>
+                <div class="rf-input-container"><i>Category Description</i>
+                    <input class="form-control rf-input-field" type="text" [(ngModel)]="newCategory.description">
+                </div>
+                
+                <button class="btn btn-primary rf-btn" type="button">Add</button>
+            </form>
+        </div> -->
+        <div style="margin: 50px; padding: 50PX;max-width: 800px;" *ngIf="showInvenoryForm" class="card">
             <form (ngSubmit)="addInventory()">
                 <div class="form-row">
                   <div class="form-group col-md-6">
@@ -118,7 +138,7 @@
                                 <!-- wait for sku -->
                                 <!-- <td>{{item.inventory_id}}</td> -->
                                 <td>{{item.name}}</td>
-                                <td>{{item.category.name}}</td>
+                                <td>{{item.category_name}}</td>
                                 <td>{{item.forecast_level}}</td>
                                 <td>
                                     <input type="number" [(ngModel)]="item.quantity" class="form-control" style="align-items: center;"/>
