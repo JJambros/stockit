@@ -32,25 +32,7 @@
        
 
 </div>
-<!-- edit Suplierform -->
-<!-- <div *ngIf="showEditForm" class="rf-register-form" style="margin-left: 80px;margin-right: 80px;margin-top: 60px;">
-    <form (ngSubmit)="updateSupplier()" class="rg-form">
-        <div class="rf-input-container">
-            <label for="editSupplier_name">Name</label>
-            <input class="form-control rf-input-field" type="text" id="editSupplier_name" [(ngModel)]="activeSupplier.supplier_name" name="editSupplier_name">
-        </div>
-        <div class="rf-input-container">
-            <label for="editSupplier_email">Email</label>
-            <input class="form-control rf-input-field" type="email" id="editSupplier_email" [(ngModel)]="activeSupplier.contact_email" name="editSupplier_email">
-        </div>
-        <div class="rf-input-container">
-            <label for="editSupplier_phoneNumber">Phone Number</label>
-            <input class="form-control rf-input-field" type="number" id="editSupplier_phoneNumber" [(ngModel)]="activeSupplier.contact_phone" name="editSupplier_phoneNumber">
-        </div>
-        <button class="btn btn-primary rf-btn" type="submit">Update</button>
-        <button class="btn btn-light rf-btn" type="button" (click)="showEditForm = false">Cancel</button>
-    </form>
-</div> -->
+
 
 <div class="table-responsive" style="padding-left: 150px;padding-right: 150px;">
 
@@ -65,22 +47,21 @@
         </thead>
         <tbody>
             <tr class="table-light" *ngFor="let supplier of suppliersList">
+                <td>{{supplier.supplier_name}} </td>
                 <td>
-                    <input *ngIf="supplier.isEditing" type="text"
-                    [(ngModel)]="supplier.supplier_name" class="form-control">
-                    <span *ngIf="!supplier.isEditing">
-                        {{supplier.supplier_name}}
-                    </span>
+                    <input type="email" [(ngModel)]="supplier.contact_email" class="form-control"/>
                 </td>
-                <td>{{supplier.contact_email}}</td>
-                <td>{{supplier.contact_phone}}</td>
+
+                <td>
+                    <input type="number" [(ngModel)]="supplier.contact_phone" class="form-control"/>
+                </td>
                 <td class="text-center">
                     <!-- edit -->
-                    <button (click)="editSupplier(supplier)" class="btn btnMaterial btn-flat success semicircle">
-                        <i class="fas fa-pen"></i>
+                    <button (click)="updateSupplier(supplier)" class="btn btnMaterial btn-flat success semicircle">
+                        <i class="fas fa-pen">Update</i>
                     </button>
                     <!-- softDelete -->
-                    <button class="btn btnMaterial btn-flat accent btnNoBorders checkboxHover" (click)="softDeleteSupplier(supplier.supplier_id)">
+                    <button *ngIf="!supplier.isEditing" class="btn btnMaterial btn-flat accent btnNoBorders checkboxHover" (click)="deleteSupplier(supplier.supplier_id)">
                         <i class="fas fa-trash btnNoBorders" style="color: #DC3545;"></i>
                     </button>
                 </td>

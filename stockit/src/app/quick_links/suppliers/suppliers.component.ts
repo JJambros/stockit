@@ -47,43 +47,30 @@ addSupplier(): void{
   );
 }
 
-activeSupplier: any = {};
-showEditForm=false;
-editSupplier(supplier:any):void{
-  this.activeSupplier = {...supplier };
-  this.showEditForm = true;
-}
 
-updateSupplier():void{
-  this.myDataService.updateSupplier(this.activeSupplier.supplier_id,
-    this.activeSupplier).subscribe((response) => {
-      //find where specific supplier is based on id to update
-      const index = this.suppliersList.findIndex(s => s.supplier_id === response.supplier_id);
-      //update
-      if(index > -1) {
-        this.suppliersList[index] = response;
-      }
-      this.showEditForm = false;
-    },(error)=> {
-      console.error('error updating supplier',error);
-    }
-  );
-}
-
-softDeleteSupplier(supplierId: number): void{
+deleteSupplier(id: number): void{
   const confirmSupplierDeletion = window.confirm('Are you sure you want to delete this suppllier?');
   if(confirmSupplierDeletion){
-    this.myDataService.soft_deleteSupplier(supplierId).subscribe(
-      (response) => {
-        this.suppliersList = this.suppliersList.filter(s => s.supplier_id !== supplierId);
+    this.myDataService.softdeleteSupplier(id).subscribe(
+      (data) => {
+        this.suppliersList = this.suppliersList.filter((supplier) => supplier.supplier_id !== id);
       },(error)=>{
         console.error('error SOFT deleting supplier', error);
       }
     );
   }else{
-    // console.log('Delete action cancelled');
+   console.log('Delete action cancelled');
   }
-  
+
+}
+
+updateSupplier(supplier:any){
+  console.log('supplier id updated: ',supplier.supplier_id);
+  this.myDataService.updatesSupplier(supplier).subscribe((data)=>{
+    console.log('updated',data);
+  },(error)=>{
+    console.error('error updating supplier', error);
+  });
 }
 
 resetForm(): void{

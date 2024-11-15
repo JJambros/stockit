@@ -6,6 +6,7 @@ import { error } from 'console';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { data } from 'jquery';
 
 interface PieChartData {
   name: string;
@@ -33,8 +34,8 @@ export class InventoryComponent implements OnInit  {
   cost: '',
   price: '',
   quantity:'',
-  category:'',
   forecast_level:'',
+  category: '',
  };
 
  // Pie chart options
@@ -56,6 +57,7 @@ export class InventoryComponent implements OnInit  {
 
  ngOnInit(): void {
   this.apiInventory();
+  this.apiCategories();
  }
 
  apiInventory(): void{
@@ -103,68 +105,37 @@ closeModal(): void {
 
 
 
-//  apiCategories(): void{
-//   this.myDataService.getCategories().subscribe(
-//     (data) => {
-//       //console to see items.______
-//       console.log('got categoies data', data);
-//       this.categories = Array.isArray(data) ? data : [];
-//     },
-//     (error) => console.error('error fetching categories data', error)
-//    );
-//  }
 
+apiCategories():void{
+  this.myDataService.getCategories().subscribe((data)=>{
+    this.categories=Array.isArray(data) ? data :[];
+  },(error)=>{
+    console.error('error categories data',error);
+  });
+}
 //add form
 addInventory(): void{
-  //test print to console item added details
-  console.log('item: ', this.newItem);
-  this.myDataService.addInventoryItem(this.newItem).subscribe( () =>{
+  console.log('new:', this.newItem);
+  this.myDataService.addInventoryItem(this.newItem).subscribe(()=>{
     this.apiInventory();
     this.showInvenoryForm = false;
-  },
-  (error) => console.error('error adding an item' , error)
-  );
+    alert('item created sucessfully');
+  },(error)=>{
+    console.error('error adding new inventory',error);
+  });
 }
-//quantity
- edit(item: any): void{
 
-  item.editQ=true;
-  item.newQuantity = item.quantity;
-
+ updateItemQuantity(item: any){
+  this.myDataService.updateInventoryItem(item).subscribe(
+    (data) => {
+      alert('Inventory quantity updated sucessfully ');
+    },
+    (error)=>{
+      alert('Error updating Inventory Quantity');
+    }
+  );
  }
 
- updateQuantity(item: any):void{
-  const quantity_parsed = parseInt(item.newQuantity, 10);
-  if(isNaN(quantity_parsed) || quantity_parsed < 0){
-    alert('Please re-enter a non-negative number.');
-    return;
-  }
-
-  const updatedItem = {...item, quantity: quantity_parsed};
-  
-  this.myDataService.updateInventoryItem(updatedItem).subscribe( () =>{
-    //console check
-    console.log(`${item.inventory_id} quantity updated`);
-    this.apiInventory();
-  },
-
-  (error) => {
-    console.error('error updating', error);
-  }
-);
- }
-
- cancelEdit(item:any):void{
-  item.editQ =false;
- }
-
-
-  
-
-//   
-
-
- 
 
  softDelete(itemId: number): void{
   if(confirm('Are you sure you want to delete this item from inventory?')){

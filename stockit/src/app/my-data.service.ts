@@ -54,9 +54,10 @@ export class MyDataService {
       return this.http.put(`${this.inventoryUrl}${item.inventory_id}/`, item);
     }
 
-    // getCategories(): Observable<any>{
-    //   return this.http.get(this.categoriesUrl);
-    // }
+    getCategories():Observable<any>{
+      return this.http.get(this.categoriesUrl);
+    }
+
     addInventoryItem(item:any): Observable<any>{
       return this.http.post(this.inventoryUrl, item);
     }
@@ -97,11 +98,11 @@ export class MyDataService {
       return this.http.post(this.suppliersUrl, supplier);
     }
 
-    updateSupplier(supplierId: number, supplier: any): Observable<any>{
-      return this.http.put(`${this.suppliersUrl}${supplierId}`, supplier);
+    updatesSupplier( supplier: any): Observable<any>{
+      return this.http.put(`${this.suppliersUrl}${supplier.supplier_id}/`, supplier);
     }
 
-    soft_deleteSupplier(supplierId:number): Observable<any>{
+    softdeleteSupplier(supplierId:number): Observable<any>{
       return this.http.delete(`${this.suppliersUrl}${supplierId}/`)
     }
 
