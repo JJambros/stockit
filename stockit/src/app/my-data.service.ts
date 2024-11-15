@@ -45,6 +45,14 @@ export class MyDataService {
       return this.http.post<any>(`http://localhost:8000/api/orders/${orderId}/mark_shipped/`, {});
     }
 
+    getCustomerOrders(): Observable<any> {
+      return this.http.get('http://localhost:8000/api/customer-orders/');
+    }
+
+    getPurchaseOrders(): Observable<any> {
+      return this.http.get('http://localhost:8000/api/purchase-orders/');
+    }
+
     //inventory 
     getInventory(): Observable<any>{
       return this.http.get(this.inventoryUrl);
@@ -54,9 +62,15 @@ export class MyDataService {
       return this.http.put(`${this.inventoryUrl}${item.inventory_id}/`, item);
     }
 
-    // getCategories(): Observable<any>{
-    //   return this.http.get(this.categoriesUrl);
+    getCategories():Observable<any>{
+      return this.http.get(this.categoriesUrl);
+    }
+
+    // addCategories(item:any): Observable<any>{
+    //   return this.http.post(this.categoriesUrl, item);
     // }
+
+
     addInventoryItem(item:any): Observable<any>{
       return this.http.post(this.inventoryUrl, item);
     }
@@ -97,6 +111,14 @@ export class MyDataService {
       return this.http.post(this.suppliersUrl, supplier);
     }
 
+    updatesSupplier( supplier: any): Observable<any>{
+      return this.http.put(`${this.suppliersUrl}${supplier.supplier_id}/`, supplier);
+    }
+
+    softdeleteSupplier(supplierId:number): Observable<any>{
+      return this.http.delete(`${this.suppliersUrl}${supplierId}/`)
+    }
+
     getBreakdown(timeFrame: string = 'overall', breakdownType: string = 'item'): Observable<any> {
       let params = new HttpParams()
         .set('time_frame', timeFrame)
@@ -108,4 +130,20 @@ export class MyDataService {
     getInventoryForecast(inventoryId: number, forecastDate: string): Observable<any> {
       return this.http.get(`${this.inventoryForecast}/${inventoryId}/${forecastDate}/`);
     }
+
+    addPurchaseOrder(payload: any): Observable<any> {
+      return this.http.post('http://localhost:8000/api/purchase-orders/', payload);
+    }
+
+    addCustomerOrder(payload: any): Observable<any> {
+      return this.http.post('http://localhost:8000/api/customer-orders/', payload);
+    }
+
+    getLocation(): Observable<any> {
+      return this.http.get('http://localhost:8000/api/locations/');
+    }
+
+    getStatus(): Observable<any> {    
+      return this.http.get('http://localhost:8000/api/order-status/');
+    } 
 }
