@@ -1,9 +1,9 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from .models import Profile, Inventory, Customer, Dashboard, ReorderThreshold, Location, InventoryHistory, \
+from .models import UserProfile, Inventory, Customer, Dashboard, ReorderThreshold, ShippingAddress, InventoryHistory, \
     ForecastingPreferences, ForecastResults, DashboardReports, DashboardVisuals, ReportDateRange, \
     UserDashSettings, OrderStatus, ReorderThreshold, Supplier, PurchaseOrder, Notifications, \
-    CustomerOrder, OrderItem, Shipment, AuditTrail, WorksOn, Category, SupplierOrder  # Import your models
+    SalesOrder, SalesOrderItem, SalesOrderShipment, AuditTrail, WorksOn, InventoryCategory, SupplierOrder  # Import your models
 from .signals import create_audit_trail
 
 # Define a custom filter for the is_deleted field
@@ -73,12 +73,12 @@ class CustomerOrderAdmin(SoftDeleteAdmin):
 
 
 # Register your models with SoftDeleteAdmin or custom admin classes
-admin.site.register(Profile, SoftDeleteAdmin)
-admin.site.register(Category, SoftDeleteAdmin)
+admin.site.register(UserProfile, SoftDeleteAdmin)
+admin.site.register(InventoryCategory, SoftDeleteAdmin)
 admin.site.register(Inventory, SoftDeleteAdmin)
 admin.site.register(Customer, SoftDeleteAdmin)
 admin.site.register(Dashboard, SoftDeleteAdmin)
-admin.site.register(Location, SoftDeleteAdmin)
+admin.site.register(ShippingAddress, SoftDeleteAdmin)
 admin.site.register(InventoryHistory, SoftDeleteAdmin)
 admin.site.register(ForecastingPreferences, SoftDeleteAdmin)
 admin.site.register(ForecastResults, SoftDeleteAdmin)
@@ -92,9 +92,9 @@ admin.site.register(Supplier, SoftDeleteAdmin)
 admin.site.register(SupplierOrder, SoftDeleteAdmin)
 admin.site.register(PurchaseOrder, SoftDeleteAdmin)
 admin.site.register(Notifications, SoftDeleteAdmin)
-admin.site.register(CustomerOrder, CustomerOrderAdmin)  # Use the customized admin for CustomerOrder
-admin.site.register(OrderItem, SoftDeleteAdmin)
-admin.site.register(Shipment, SoftDeleteAdmin)
+admin.site.register(SalesOrder, CustomerOrderAdmin)  # Use the customized admin for CustomerOrder
+admin.site.register(SalesOrderItem, SoftDeleteAdmin)
+admin.site.register(SalesOrderShipment, SoftDeleteAdmin)
 admin.site.register(AuditTrail)  # No need for soft deletion, so default admin is fine
 admin.site.register(WorksOn, SoftDeleteAdmin)
 

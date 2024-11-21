@@ -8,7 +8,7 @@ from datetime import timedelta # For Tracking Shipping
 from threading import Timer # For Tracking Shipping
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from .models import AuditTrail, SupplierOrder, OrderItem, PurchaseOrder, Inventory, ReorderThreshold, InventoryHistory, Profile, Shipment
+from .models import AuditTrail, SupplierOrder, SalesOrderItem, PurchaseOrder, Inventory, ReorderThreshold, InventoryHistory, UserProfile, SalesOrderShipment
 
 
 # --------- SIGNAL FOR AUDIT TRAIL --------- #
@@ -54,7 +54,7 @@ def track_changes_on_soft_delete(sender, instance, **kwargs):
 # --------- SIGNAL FOR INVENTORY ADJUSTING --------- #
 
 # Decrease inventory quantity when an OrderItem is created
-@receiver(post_save, sender=OrderItem)
+@receiver(post_save, sender=SalesOrderItem)
 def decrease_inventory_on_order(sender, instance, created, **kwargs):
     if created and not instance.inventory.is_deleted:  # Only decrease if a new OrderItem is created and not soft-deleted
         inventory_item = instance.inventory
@@ -98,7 +98,7 @@ def auto_generate_order(sender, instance, **kwargs):
 # --------- SIGNAL FOR INVENTORY_HISTORY --------- #
 
 # Update inventory history when orders are sold
-@receiver(post_save, sender=OrderItem)
+@receiver(post_save, sender=SalesOrderItem)
 def update_inventory_history_on_order(sender, instance, created, **kwargs):
     if created and not instance.inventory.is_deleted:  # Only update if the inventory is not soft-deleted
         inventory = instance.inventory
@@ -134,7 +134,7 @@ def update_inventory_history_on_restock(sender, instance, created, **kwargs):
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
         # Create a new profile if the user is created
-        Profile.objects.create(
+        UserProfile.objects.create(
             user=instance,
             Fname=instance.first_name if instance.first_name else "FirstName",
             Lname=instance.last_name if instance.last_name else "LastName",
@@ -143,7 +143,7 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
         )
     else:
         # Update the profile if the user is updated
-        Profile.objects.filter(user=instance).update(
+        UserProfile.objects.filter(user=instance).update(
             Fname=instance.first_name,
             Lname=instance.last_name,
             email=instance.email
@@ -151,7 +151,7 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
 
 # --------- SIGNAL FOR TRACKING SHIPPING --------- #
 
-@receiver(post_save, sender=OrderItem)
+@receiver(post_save, sender=SalesOrderItem)
 def create_shipment_on_order_item(sender, instance, created, **kwargs):
     if created:
         # Calculate the shipment and estimated delivery dates
@@ -159,7 +159,7 @@ def create_shipment_on_order_item(sender, instance, created, **kwargs):
         est_delivery_date = shipped_date + timedelta(days=1)
 
         # Create the Shipment automatically
-        Shipment.objects.create(
+        SalesOrderShipment.objects.create(
             order=instance.order,
             shipped_date=shipped_date,
             est_delivery_date=est_delivery_date

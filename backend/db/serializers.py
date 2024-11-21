@@ -1,35 +1,45 @@
 from rest_framework import serializers 
-from .models import (Profile, Inventory, Customer, Dashboard, Location, InventoryHistory, 
+from .models import (UserProfile, Inventory, Customer, Dashboard, ShippingAddress, InventoryHistory, 
                      ForecastingPreferences, ForecastResults, DashboardReports, DashboardVisuals, 
                      ReportDateRange, UserDashSettings, OrderStatus, ReorderThreshold, Supplier,
-                     PurchaseOrder, Notifications, CustomerOrder, OrderItem, Shipment, AuditTrail,
-                     WorksOn, Category)
+                     PurchaseOrder, Notifications, SalesOrder, SalesOrderItem, SalesOrderShipment, AuditTrail,
+                     WorksOn, InventoryCategory)
 
 # Profile Serializer
-class ProfileSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Profile
+        model = UserProfile
         fields = '__all__'  # Optionally include 'is_deleted' if needed
         extra_kwargs = {'is_deleted': {'read_only': True}}  # Make 'is_deleted' read-only
 
-# Category Serializer
-class CategorySerializer(serializers.ModelSerializer):
+# Category Serializer   --> changed to InventoryCategorySerializer
+class InventoryCategorySerializer(serializers.ModelSerializer):
     class Meta:
-        model = Category
+        model = InventoryCategory
         fields = '__all__'  # or limit to necessary fields
         extra_kwargs = {'is_deleted': {'read_only': True}}  # Make 'is_deleted' read-only
 
-# Inventory Serializer
 class InventorySerializer(serializers.ModelSerializer):
-    category_name = serializers.CharField(source='category.name', read_only=True)  # Display category name in responses
+    item_category = serializers.CharField(source='item_category.inventory_category_name', default='Uncategorized')
+
+    def validate_item_category(self, value):
+        # Convert category name to InventoryCategory instance
+        category, _ = InventoryCategory.objects.get_or_create(inventory_category_name=value)
+        return category
+
+    def create(self, validated_data):
+        category_name = validated_data.pop('item_category', {}).get('inventory_category_name', 'Uncategorized')
+        validated_data['item_category'], _ = InventoryCategory.objects.get_or_create(inventory_category_name=category_name)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        category_name = validated_data.pop('item_category', {}).get('inventory_category_name', 'Uncategorized')
+        instance.item_category, _ = InventoryCategory.objects.get_or_create(inventory_category_name=category_name)
+        return super().update(instance, validated_data)
 
     class Meta:
         model = Inventory
-        fields = ['inventory_id', 'name', 'cost', 'price', 'quantity', 'forecast_level', 'category', 'category_name', 'is_deleted']
-        extra_kwargs = {
-            'is_deleted': {'read_only': True},  # Prevent direct modification of `is_deleted`
-            'category': {'write_only': True},  # Allow setting `category` by ID in requests
-        }
+        fields = '__all__'
 
 # Customer Serializer
 class CustomerSerializer(serializers.ModelSerializer):
@@ -45,10 +55,10 @@ class DashboardSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {'is_deleted': {'read_only': True}}
 
-# Location Serializer
-class LocationSerializer(serializers.ModelSerializer):
+# Location Serializer   --> changed to ShippingAddressSerializer
+class ShippingAddressSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Location
+        model = ShippingAddress
         fields = '__all__'
         extra_kwargs = {'is_deleted': {'read_only': True}}
 
@@ -140,13 +150,13 @@ class NotificationsSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {'is_deleted': {'read_only': True}}
 
-# Order Item Serializer
-class OrderItemSerializer(serializers.ModelSerializer):
+# Order Item Serializer --> changed to SalesOrderItemSerializer
+class SalesOrderItemSerializer(serializers.ModelSerializer):
     inventory_name = serializers.CharField(source='inventory.name', read_only=True)
     order_name = serializers.CharField(source='order.to_company', read_only=True)
 
     class Meta:
-        model = OrderItem
+        model = SalesOrderItem
         fields = ['order_item_id', 'inventory', 'inventory_name', 'order', 'order_name', 'quantity', 'is_deleted']
         extra_kwargs = {
             'is_deleted': {'read_only': True},
@@ -154,23 +164,23 @@ class OrderItemSerializer(serializers.ModelSerializer):
             'order': {'write_only': True}
         }
 
-# Customer Order Serializer
-class CustomerOrderSerializer(serializers.ModelSerializer):
+# Customer Order Serializer --> changed to SalesOrderSerializer
+class SalesOrderSerializer(serializers.ModelSerializer):
     status_display = serializers.CharField(source='status.current_status', read_only=True)
     location_name = serializers.CharField(source='location.address', read_only=True)
     customer_name = serializers.CharField(source='customer.name', read_only=True)
     user_name = serializers.CharField(source='user.username', read_only=True)
-    items = OrderItemSerializer(source='orderitem_set', many=True, read_only=True)
+    items = SalesOrderItemSerializer(source='orderitem_set', many=True, read_only=True)
 
     class Meta:
-        model = CustomerOrder
+        model = SalesOrder
         fields = '__all__'  # Keeps all model fields and adds the custom readable fields
         extra_kwargs = {'is_deleted': {'read_only': True}, 'shipped': {'read_only': False}}
 
-# Shipment Serializer
-class ShipmentSerializer(serializers.ModelSerializer):
+# Shipment Serializer   --> changed to SalesOrderShipmentSerializer
+class SalesOrderShipmentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Shipment
+        model = SalesOrderShipment
         fields = '__all__'
         extra_kwargs = {'is_deleted': {'read_only': True}}
 

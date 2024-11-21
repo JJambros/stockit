@@ -9,11 +9,11 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User  # Built-in User model for auth
 from django.shortcuts import render # Needed for audit-trail
-from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail, OrderItem, Customer, CustomerOrder, \
-    Shipment, PurchaseOrder, ForecastingPreferences, Supplier, Category, Location, OrderStatus
-from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, \
-    OrderItemSerializer, ShipmentSerializer, PurchaseOrderSerializer, ForecastingPreferencesSerializer, \
-    SupplierSerializer, CustomerOrderSerializer, CustomerSerializer, CategorySerializer, LocationSerializer, OrderStatusSerializer
+from .models import UserProfile, Inventory, Dashboard, InventoryHistory, AuditTrail, SalesOrderItem, Customer, SalesOrder, \
+    SalesOrderShipment, PurchaseOrder, ForecastingPreferences, Supplier, InventoryCategory, ShippingAddress, OrderStatus
+from .serializers import UserProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, \
+    SalesOrderItemSerializer, SalesOrderShipmentSerializer, PurchaseOrderSerializer, ForecastingPreferencesSerializer, \
+    SupplierSerializer, SalesOrderSerializer, CustomerSerializer, InventoryCategorySerializer, ShippingAddressSerializer, OrderStatusSerializer
 from decimal import Decimal  # Added because math is dumb (decimals and floats can't multiply)
 
 
@@ -51,21 +51,21 @@ def logout_view(request):
 
 # Get/update the logged-in user's profile
 @api_view(['GET', 'PUT'])
-def profile_detail(request):
+def user_profile_detail(request):
     user = request.user  # Get the currently logged-in user
     try:
-        profile = Profile.objects.get(user=user, is_deleted=False)  # Check for soft deletion
-    except Profile.DoesNotExist:
+        profile = UserProfile.objects.get(user=user, is_deleted=False)  # Check for soft deletion
+    except UserProfile.DoesNotExist:
         return Response({'error': 'Profile not found'}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
         # Return the user's profile information
-        serializer = ProfileSerializer(profile)
+        serializer = UserProfileSerializer(profile)
         return Response(serializer.data)
 
     elif request.method == 'PUT':
         # Update the user's profile
-        serializer = ProfileSerializer(profile, data=request.data)
+        serializer = UserProfileSerializer(profile, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -155,16 +155,16 @@ def inventory_detail(request, pk):
 
 # List all categories or create a new one
 @api_view(['GET', 'POST'])
-def category_list(request):
+def inventory_category_list(request):
     if request.method == 'GET':
         # Retrieve all categories excluding soft-deleted ones
-        categories = Category.objects.filter(is_deleted=False)
-        serializer = CategorySerializer(categories, many=True)
+        categories = InventoryCategory.objects.filter(is_deleted=False)
+        serializer = InventoryCategorySerializer(categories, many=True)
         return Response(serializer.data)
 
     elif request.method == 'POST':
         # Create a new category
-        serializer = CategorySerializer(data=request.data)
+        serializer = InventoryCategorySerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -172,18 +172,18 @@ def category_list(request):
 
 # Retrieve, update, or delete a specific category
 @api_view(['GET', 'PUT', 'DELETE'])
-def category_detail(request, pk):
+def inventory_category_detail(request, pk):
     try:
-        category = Category.objects.get(pk=pk, is_deleted=False)
-    except Category.DoesNotExist:
+        category = InventoryCategory.objects.get(pk=pk, is_deleted=False)
+    except InventoryCategory.DoesNotExist:
         return Response({'error': 'Category not found'}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        serializer = CategorySerializer(category)
+        serializer = InventoryCategorySerializer(category)
         return Response(serializer.data)
 
     elif request.method == 'PUT':
-        serializer = CategorySerializer(category, data=request.data)
+        serializer = InventoryCategorySerializer(category, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -215,11 +215,11 @@ def search_view(request):
 
     if query:
         # Profiles Search
-        profiles = Profile.objects.filter(
+        profiles = UserProfile.objects.filter(
             Q(Fname__icontains=query) | Q(Lname__icontains=query) | Q(email__icontains=query),
             is_deleted=False
         )
-        profile_results = ProfileSerializer(profiles, many=True).data
+        profile_results = UserProfileSerializer(profiles, many=True).data
 
         # Inventory Search with Sorting and Filtering
         inventory_items = Inventory.objects.filter(
@@ -238,7 +238,7 @@ def search_view(request):
         inventory_results = InventorySerializer(inventory_items, many=True).data
 
         # Customer Order Search with Sorting and Date Filtering
-        orders = CustomerOrder.objects.filter(
+        orders = SalesOrder.objects.filter(
             Q(from_company__icontains=query) | Q(to_company__icontains=query),
             is_deleted=False
         )
@@ -253,7 +253,7 @@ def search_view(request):
         elif sort_by == 'shipping_status':
             orders = orders.order_by('status__current_status' if order == 'asc' else '-status__current_status')
 
-        order_results = CustomerOrderSerializer(orders, many=True).data
+        order_results = SalesOrderSerializer(orders, many=True).data
 
     # Combine results
     results = {
@@ -264,10 +264,10 @@ def search_view(request):
 
     return Response(results)
 
-    @api_view(['GET', 'POST'])
-    def inventory_history_view(request):
-        history_items = InventoryHistory.objects.all().order_by('-transaction_date')
-        return render(request, 'inventory_history.html', {'history_items': history_items})
+@api_view(['GET', 'POST'])
+def inventory_history_view(request):
+    history_items = InventoryHistory.objects.all().order_by('-transaction_date')
+    return render(request, 'inventory_history.html', {'history_items': history_items})
 
 
 # --------- DASHBOARD VIEWS --------- #
@@ -470,32 +470,32 @@ def audit_log_view(request):
     return render(request, 'audit_log.html', {'audit_logs': audit_logs})
 
 
-# --------- ORDER ITEM VIEWS --------- #
+# --------- SALES ORDER ITEM VIEWS --------- # 
 
 @api_view(['GET', 'POST'])
-def order_item_list(request):
+def sales_order_item_list(request):
     if request.method == 'GET':
-        order_items = OrderItem.objects.filter(is_deleted=False)
-        serializer = OrderItemSerializer(order_items, many=True)
+        order_items = SalesOrderItem.objects.filter(is_deleted=False)
+        serializer = SalesOrderItemSerializer(order_items, many=True)
         return Response(serializer.data)
     
     elif request.method == 'POST':
-        serializer = OrderItemSerializer(data=request.data)
+        serializer = SalesOrderItemSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# --------- CUSTOMER ORDER VIEWS --------- #
+# --------- SALES ORDER VIEWS --------- #
 @api_view(['GET', 'POST'])
-def customer_order_list(request):
+def sales_order_list(request):
     if request.method == 'GET':
-        orders = CustomerOrder.objects.filter(is_deleted=False)
-        serializer = CustomerOrderSerializer(orders, many=True)
+        orders = SalesOrder.objects.filter(is_deleted=False)
+        serializer = SalesOrderSerializer(orders, many=True)
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        serializer = CustomerOrderSerializer(data=request.data)
+        serializer = SalesOrderSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -503,18 +503,18 @@ def customer_order_list(request):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
-def customer_order_detail(request, pk):
+def sales_order_detail(request, pk):
     try:
-        order = CustomerOrder.objects.get(pk=pk, is_deleted=False)
-    except CustomerOrder.DoesNotExist:
+        order = SalesOrder.objects.get(pk=pk, is_deleted=False)
+    except SalesOrder.DoesNotExist:
         return Response({'error': 'Customer Order not found'}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        serializer = CustomerOrderSerializer(order)
+        serializer = SalesOrderSerializer(order)
         return Response(serializer.data)
 
     elif request.method == 'PUT':
-        serializer = CustomerOrderSerializer(order, data=request.data)
+        serializer = SalesOrderSerializer(order, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -525,33 +525,33 @@ def customer_order_detail(request, pk):
         order.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-# --------- LOCATION VIEWS --------- #
+# --------- SHIPPING ADDRESS VIEWS --------- #
 
 @api_view(['GET', 'POST'])
-def location_list(request):
+def shipping_address_list(request):
     if request.method == 'GET':
-        locations = Location.objects.all()
-        serializer = LocationSerializer(locations, many=True)
+        locations = ShippingAddress.objects.all()
+        serializer = ShippingAddressSerializer(locations, many=True)
         return Response(serializer.data)
     elif request.method == 'POST':
-        serializer = LocationSerializer(data=request.data)
+        serializer = ShippingAddressSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'PUT', 'DELETE'])
-def location_detail(request, pk):
+def shipping_address_detail(request, pk):
     try:
-        location = Location.objects.get(pk=pk)
-    except Location.DoesNotExist:
+        location = ShippingAddress.objects.get(pk=pk)
+    except ShippingAddress.DoesNotExist:
         return Response({'error': 'Location not found'}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
-        serializer = LocationSerializer(location)
+        serializer = ShippingAddressSerializer(location)
         return Response(serializer.data)
     elif request.method == 'PUT':
-        serializer = LocationSerializer(location, data=request.data)
+        serializer = ShippingAddressSerializer(location, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -606,16 +606,16 @@ def index_view(request):
 
 # List all shipments or create a new shipment
 @api_view(['GET', 'POST'])
-def shipment_list(request):
+def sales_order_shipment_list(request):
     if request.method == 'GET':
         # Retrieve all shipments, excluding soft-deleted ones
-        shipments = Shipment.objects.filter(is_deleted=False)
-        serializer = ShipmentSerializer(shipments, many=True)
+        shipments = SalesOrderShipment.objects.filter(is_deleted=False)
+        serializer = SalesOrderShipmentSerializer(shipments, many=True)
         return Response(serializer.data)
 
     elif request.method == 'POST':
         # Create a new shipment
-        serializer = ShipmentSerializer(data=request.data)
+        serializer = SalesOrderShipmentSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -624,20 +624,20 @@ def shipment_list(request):
 
 # Retrieve, update, or soft delete a specific shipment
 @api_view(['GET', 'PUT', 'DELETE'])
-def shipment_detail(request, pk):
+def sales_order_shipment_detail(request, pk):
     try:
-        shipment = Shipment.objects.get(pk=pk, is_deleted=False)
-    except Shipment.DoesNotExist:
+        shipment = SalesOrderShipment.objects.get(pk=pk, is_deleted=False)
+    except SalesOrderShipment.DoesNotExist:
         return Response({'error': 'Shipment not found'}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
         # Return shipment details
-        serializer = ShipmentSerializer(shipment)
+        serializer = SalesOrderShipmentSerializer(shipment)
         return Response(serializer.data)
 
     elif request.method == 'PUT':
         # Update shipment
-        serializer = ShipmentSerializer(shipment, data=request.data)
+        serializer = SalesOrderShipmentSerializer(shipment, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -649,14 +649,14 @@ def shipment_detail(request, pk):
         shipment.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    # --- TRACKING SHIPPING VIEWS --- #
 
+# --- TRACKING SHIPPING VIEWS --- #
 
 @api_view(['POST'])
 def mark_order_as_shipped(request, order_id):
     try:
-        order = CustomerOrder.objects.get(order_id=order_id)
-    except CustomerOrder.DoesNotExist:
+        order = SalesOrder.objects.get(order_id=order_id)
+    except SalesOrder.DoesNotExist:
         return Response({'error': 'Order not found'}, status=status.HTTP_404_NOT_FOUND)
 
     order.shipped = True
@@ -808,8 +808,8 @@ def dashboard_net_purchases_by_item(request):
         "time_frame": time_frame
     })
 
-    # --- VIEWS FOR BREAKDOWN --- #
 
+    # --- VIEWS FOR BREAKDOWN --- #
 
 @api_view(['GET'])
 def dashboard_total_breakdown(request):
@@ -849,8 +849,8 @@ def dashboard_total_breakdown(request):
     total_purchases = purchases_query.aggregate(total_purchases=Sum('quantity'))['total_purchases'] or 0
 
     # Filter Shipments for assigned shipments and shipments in need of attention
-    shipment_query = Shipment.objects.exclude(tracking_number='0000', shipping_company='To Be Determined')
-    shipments_needing_attention_query = Shipment.objects.filter(
+    shipment_query = SalesOrderShipment.objects.exclude(tracking_number='0000', shipping_company='To Be Determined')
+    shipments_needing_attention_query = SalesOrderShipment.objects.filter(
         Q(tracking_number='0000') | Q(shipping_company='To Be Determined'))
 
     if start_date:

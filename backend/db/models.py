@@ -1,21 +1,22 @@
 import random
 from django.db import models
-from datetime import datetime
-from django.utils import timezone
+from django.db.models import F
+from datetime import datetime       # --> REMOVE
+from django.utils import timezone   # --> REMOVE
 from django.contrib.auth.models import User  # Importing the built-in User model
 from django.contrib.contenttypes.models import ContentType # Store metadata about models installed in app (refer to any model in a generic way)
 from django.contrib.contenttypes.fields import GenericForeignKey # Used to refer to any specific object of any model in app
 
 # Create your models here.
 
-# Profile model to store additional user information
-class Profile(models.Model):
+# Profile model to store additional user information --> Changed to UserProfile
+class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, default=1)  # Link Profile to User
     Fname = models.CharField(max_length=15)
     Minit = models.CharField(max_length=1, null=True, blank=True)
     Lname = models.CharField(max_length=15)
-    email = models.EmailField(max_length=50, unique=True)  # Unique
-    phone_number = models.CharField(max_length=20, unique=True)  # Unique
+    user_email = models.EmailField(max_length=50, unique=True)  # Unique    --> changed to user_email
+    user_phone_number = models.CharField(max_length=20, unique=True)  # Unique  --> changed to user_phone_number
     is_deleted = models.BooleanField(default=False)  # Field for soft deletion
 
     def delete(self, using=None, keep_parents=False):
@@ -43,37 +44,61 @@ class Profile(models.Model):
         """
         return cls.objects.filter(is_deleted=False)
     
-# Category class to store information on categories
-class Category(models.Model):
-    category_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50, unique=True)
-    description = models.TextField(blank=True, null=True)
-    is_deleted = models.BooleanField(default=False) # For soft deletion if needed
+# Category class to store information on categories     --> changed to InventoryCategory
+class InventoryCategory(models.Model):
+    inventory_category_id = models.AutoField(primary_key=True)
+    inventory_category_name = models.CharField(max_length=50, unique=True)
+    inventory_category_description = models.TextField(blank=True, null=True)
+    is_deleted = models.BooleanField(default=False)
 
     def __str__(self):
-        return self.name
-    
-# Inventory class to store information on inventory items
+        return self.inventory_category_name
+
+
 class Inventory(models.Model):
     inventory_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=15)
-    cost = models.DecimalField(max_digits=10, decimal_places=2)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    quantity = models.IntegerField()
-    forecast_level = models.IntegerField()
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)  # Link to Category
+    item_name = models.CharField(max_length=15)
+    item_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    item_price = models.DecimalField(max_digits=10, decimal_places=2)
+    item_quantity = models.IntegerField()
+    item_forecast_level = models.IntegerField()
+
+    # Change ForeignKey to CharField for storing category names directly
+    item_category = models.ForeignKey(
+        'InventoryCategory',
+        on_delete=models.SET_NULL,
+        null=True,
+        default=None
+    )
+
+    def save(self, *args, **kwargs):
+        if self.item_category_id is None:  # Check if the ID is missing
+            self.item_category = InventoryCategory.objects.get(
+                inventory_category_name='Uncategorized'
+            )
+        super().save(*args, **kwargs)
+
+    
+
+# Location model to store additional location info --> changed to ShippingAddress
+class ShippingAddress(models.Model):
+    location_id = models.AutoField(primary_key=True)
+    street_address = models.CharField(max_length=30)    # --> changed to street_address
+    city = models.CharField(max_length=20)
+    state = models.CharField(max_length=2)
+    postal_code = models.CharField(max_length=5)
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
-        return self.name
-    
+        return f'{self.address}, {self.city}, {self.state}, {self.postal_code}'
+
 # Customer class to store information on the customer (who orders FROM us)
 class Customer(models.Model):
     customer_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=20)
-    contact_fname = models.CharField(max_length=20)
-    contact_lname = models.CharField(max_length=40)
-    shipping_address = models.CharField(max_length=50)
+    customer_business_name = models.CharField(max_length=20)            # --> changed to customer_business_name
+    customer_fname = models.CharField(max_length=20)                    # --> changed to customer_fname
+    customer_lname = models.CharField(max_length=40)                    # --> changed to customer_lname
+    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.CASCADE)    # --> changed to shipping_address, now a FK
     customer_email = models.EmailField(max_length=40, unique=True) # Unique
     customer_phone = models.CharField(max_length=20, unique=True) # Unique
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
@@ -93,18 +118,6 @@ class Dashboard(models.Model):
     def __str__(self):
         return self.dashboard_type
 
-# Location model to store additional location info
-class Location(models.Model):
-    location_id = models.AutoField(primary_key=True)
-    address = models.CharField(max_length=30)
-    city = models.CharField(max_length=20)
-    state = models.CharField(max_length=2)
-    postal_code = models.CharField(max_length=5)
-    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
-
-    def __str__(self):
-        return f'{self.address}, {self.city}, {self.state}, {self.postal_code}'
-
 # InventoryHistory model to store information about the inventory's history
 class InventoryHistory(models.Model):
     history_id = models.AutoField(primary_key=True)
@@ -118,8 +131,8 @@ class InventoryHistory(models.Model):
     )
     
     transaction_type = models.CharField(max_length=20, choices=TRANSACTION_TYPES)  # Includes Sale, Restock, Return, Adjustment
-    quantity = models.IntegerField()  # How much was sold or restocked (negative for returns)
-    remaining_quantity = models.IntegerField()  # Updated inventory level after the transaction
+    transaction_quantity = models.IntegerField()  # How much was sold or restocked (negative for returns)   --> changed to transaction_quantity
+    remaining_item_quantity = models.IntegerField()  # Updated inventory level after the transaction        --> changed to remaining_item_quantity
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
     source = models.CharField(max_length=100, blank=True, null=True)  # Source of transaction (e.g., order ID, shipment ID)
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
@@ -131,14 +144,14 @@ class InventoryHistory(models.Model):
 class Supplier(models.Model):
     supplier_id = models.AutoField(primary_key=True)
     supplier_name = models.CharField(max_length=50)
-    contact_email = models.EmailField(max_length=50)
-    contact_phone = models.CharField(max_length=20)
+    supplier_email = models.EmailField(max_length=50)       # --> changed to supplier_email
+    supplier_phone = models.CharField(max_length=20)        # --> changed to supplier email
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return self.supplier_name
 
-# Supplier model to hold information about the Suppliers orders
+# Supplier model to hold information about the Suppliers orders # --> Used for Automatic Reorder
 class SupplierOrder(models.Model):
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
     product = models.ForeignKey(Inventory, on_delete=models.CASCADE)
@@ -158,7 +171,7 @@ class ForecastingPreferences(models.Model):
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)
     
     # New fields for extended forecasting options
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
+    inventory_category = models.ForeignKey(InventoryCategory, on_delete=models.SET_NULL, null=True, blank=True) # --> changed to inventory_category
     supplier = models.ForeignKey(Supplier, on_delete=models.SET_NULL, null=True, blank=True)
     customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True)
     trend_direction = models.CharField(max_length=10, choices=[('increase', 'Increase'), ('decrease', 'Decrease')], null=True, blank=True)
@@ -194,7 +207,7 @@ class DashboardReports(models.Model):
     def __str__(self):
         return f'Report {self.report_id} for {self.dashboard}'
 
-# DashboardVisuals model to store information for the visuals in the dashboard
+# DashboardVisuals model to store information for the visuals in the dashboard --> REMOVE
 class DashboardVisuals(models.Model):
     visual_id = models.AutoField(primary_key=True)
     visual_type = models.CharField(max_length=50)
@@ -206,7 +219,7 @@ class DashboardVisuals(models.Model):
     def __str__(self):
         return f'Visual {self.visual_id} for {self.dashboard}'
 
-# ReportDateRange model to store information on the date range
+# ReportDateRange model to store information on the date range  --> REMOVE
 class ReportDateRange(models.Model):
     date_range_id = models.AutoField(primary_key=True)
     report_type = models.CharField(max_length=50)
@@ -218,7 +231,7 @@ class ReportDateRange(models.Model):
     def __str__(self):
         return f'Report Date Range {self.date_range_id} for {self.dashboard}'
 
-# UserDashSettings model to store information on the users' settings for the dashboard
+# UserDashSettings model to store information on the users' settings for the dashboard --> REMOVE
 class UserDashSettings(models.Model):
     setting_id = models.AutoField(primary_key=True)
     preferred_visuals = models.CharField(max_length=50)
@@ -250,7 +263,7 @@ class OrderStatus(models.Model):
     def __str__(self):
         return f'Status {self.status_id}'
 
-    # ReorderThreshold model to hold information on the threshold for a reorder
+# ReorderThreshold model to hold information on the threshold for a reorder
 class ReorderThreshold(models.Model):
     threshold_id = models.AutoField(primary_key=True)
     reorder_point = models.IntegerField()
@@ -266,7 +279,7 @@ class ReorderThreshold(models.Model):
 # PurchaseOrder model to hold information about the Purchase Order
 class PurchaseOrder(models.Model):
     po_id = models.AutoField(primary_key=True)
-    order_quantity = models.IntegerField()
+    purchase_order_quantity = models.IntegerField()     # --> Changed to purchase_order_quantity
     po_date = models.DateField()
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)  # Link to Supplier
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
@@ -285,13 +298,13 @@ class Notifications(models.Model):
     def __str__(self):
         return f'Notification {self.notification_id} for {self.user}'
 
-# CustomerOrder model to hold information about a customer's order
-class CustomerOrder(models.Model):
+# CustomerOrder model to hold information about a customer's order  --> changed to SalesOrder
+class SalesOrder(models.Model):
     order_id = models.AutoField(primary_key=True)
     from_company = models.CharField(max_length=20)
     to_company = models.CharField(max_length=20)
     customer_order_date = models.DateField()
-    location = models.ForeignKey(Location, on_delete=models.CASCADE)
+    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.CASCADE)      # --> Changed to address
     status = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Add this line to link to the user
@@ -311,24 +324,24 @@ class CustomerOrder(models.Model):
         return f'Customer Order {self.order_id} from {self.from_company} to {self.to_company}'
 
 # OrderItem model to hold information about the item in the order
-class OrderItem(models.Model):
+class SalesOrderItem(models.Model):
     order_item_id = models.AutoField(primary_key=True)
     quantity = models.IntegerField()
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
-    order = models.ForeignKey(CustomerOrder, on_delete=models.CASCADE)  # Link to CustomerOrder
+    order = models.ForeignKey(SalesOrder, on_delete=models.CASCADE)  # Link to CustomerOrder --> changed to link to SalesOrder
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def __str__(self):
         return f'Order Item {self.order_item_id} for Order {self.order}'
     
-# Shipment model to hold information about shipping
-class Shipment(models.Model):
+# Shipment model to hold information about shipping --> Changed to SalesOrderShipment
+class SalesOrderShipment(models.Model):
     shipment_id = models.AutoField(primary_key=True)
     tracking_number = models.CharField(max_length=20, default="0000")  # Default tracking number
     shipping_company = models.CharField(max_length=100, default="To Be Determined")  # Default company name
     shipped_date = models.DateField()
     est_delivery_date = models.DateField()
-    order = models.ForeignKey(CustomerOrder, on_delete=models.CASCADE)  # Link to CustomerOrder
+    order = models.ForeignKey(SalesOrder, on_delete=models.CASCADE)  # Link to CustomerOrder --> changed to link to SalesOrder
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 
     def save(self, *args, **kwargs):
@@ -336,7 +349,7 @@ class Shipment(models.Model):
         if not self.tracking_number or self.tracking_number == "0000":
             while True:
                 new_tracking_number = f"{random.randint(100000000, 999999999)}"
-                if not Shipment.objects.filter(tracking_number=new_tracking_number).exists():
+                if not SalesOrderShipment.objects.filter(tracking_number=new_tracking_number).exists():
                     self.tracking_number = new_tracking_number
                     break
         super().save(*args, **kwargs)
@@ -359,11 +372,11 @@ class AuditTrail(models.Model):
         return f'Change by {self.changed_by} at {self.change_time} - {self.changed_desc}'
 
     
-# WorksOn model -- needed to represent a many-to-many relationship
+# WorksOn model -- needed to represent a many-to-many relationship? -- REMOVE
 class WorksOn(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Link to User
     inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
-    order = models.ForeignKey(CustomerOrder, on_delete=models.CASCADE)  # Link to CustomerOrder
+    order = models.ForeignKey(SalesOrder, on_delete=models.CASCADE)  # Link to CustomerOrder//SalesOrder
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
     
     class Meta:
