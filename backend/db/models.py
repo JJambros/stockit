@@ -2,7 +2,7 @@ import random
 from django.db import models
 from datetime import datetime
 from django.utils import timezone
-from django.contrib.auth.models import User  # Importing the built-in User model
+from django.contrib.auth.models import User  # Importing the built-in    model
 from django.contrib.contenttypes.models import ContentType # Store metadata about models installed in app (refer to any model in a generic way)
 from django.contrib.contenttypes.fields import GenericForeignKey # Used to refer to any specific object of any model in app
 
@@ -351,7 +351,7 @@ class AuditTrail(models.Model):
     changed_desc = models.CharField(max_length=255)
 
     content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True)  # Track the model type
-    object_id = models.PositiveIntegerField(null=True, blank=True)  # ID of the specific object
+    object_id = models.CharField(max_length=255, null=True, blank=True)
     content_object = GenericForeignKey('content_type', 'object_id')  # Link to any model
     is_deleted = models.BooleanField(default=False)  # New field for soft deletion
 

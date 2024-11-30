@@ -5,7 +5,7 @@ from django.conf import settings
 from crum import get_current_user  # Import from crum to get the current user context
 from django.utils import timezone # For Tracking Shipping
 from datetime import timedelta # For Tracking Shipping
-from threading import Timer # For Tracking Shipping
+from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from .models import AuditTrail, SupplierOrder, OrderItem, PurchaseOrder, Inventory, ReorderThreshold, InventoryHistory, Profile, Shipment
@@ -141,6 +141,10 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
             email=instance.email if instance.email else f"{instance.username}@example.com", # Fill in just for a profile creation, can be changed manually
             phone_number="0000000000" # Fill in just for a profile creation, can be changed manually
         )
+
+        # Generate a token for the user
+        Token.objects.create(user=instance)
+
     else:
         # Update the profile if the user is updated
         Profile.objects.filter(user=instance).update(
