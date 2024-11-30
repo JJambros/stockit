@@ -3,7 +3,7 @@ from .models import (Profile, Inventory, Customer, Dashboard, Location, Inventor
                      ForecastingPreferences, ForecastResults, DashboardReports, DashboardVisuals, 
                      ReportDateRange, UserDashSettings, OrderStatus, ReorderThreshold, Supplier,
                      PurchaseOrder, Notifications, CustomerOrder, OrderItem, Shipment, AuditTrail,
-                     WorksOn, Category)
+                     WorksOn, Category, SupplierOrder)
 
 # Profile Serializer
 class ProfileSerializer(serializers.ModelSerializer):
@@ -201,3 +201,32 @@ class WorksOnSerializer(serializers.ModelSerializer):
         model = WorksOn
         fields = '__all__'
         extra_kwargs = {'is_deleted': {'read_only': True}}
+
+
+# ReorderThreshold Serializer
+class ReorderThresholdSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReorderThreshold
+        fields = '__all__'
+        extra_kwargs = {'is_deleted': {'read_only': True}}
+
+# SupplierOrder Serializer
+class SupplierOrderSerializer(serializers.ModelSerializer):
+    supplier_name = serializers.CharField(source='supplier.supplier_name', read_only=True)
+    product_name = serializers.CharField(source='product.name', read_only=True)
+
+
+    class Meta:
+        model = SupplierOrder
+        fields = ['supplier_order_id', 'supplier', 'supplier_name', 'product', 'product_name', 'quantity', 'status',
+                  'created_at']
+        extra_kwargs = {
+            'status': {'read_only': False},
+            'created_at': {'read_only': True}
+        }
+
+# Notifications Serializer
+class NotificationsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notifications
+        fields = '__all__'
