@@ -1063,3 +1063,39 @@ def purchase_order_detail(request, pk):
         purchase_order.is_deleted = True
         purchase_order.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+# --------- SUPPLIER ORDER VIEWS --------- #
+@api_view(['GET', 'POST'])
+def supplier_order_list(request):
+        if request.method == 'GET':
+            supplier_orders = SupplierOrder.objects.all()
+            serializer = SupplierOrderSerializer(supplier_orders, many=True)
+            return Response(serializer.data)
+
+        elif request.method == 'POST':
+            serializer = SupplierOrderSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def supplier_order_detail(request, pk):
+        try:
+            supplier_order = SupplierOrder.objects.get(pk=pk)
+        except SupplierOrder.DoesNotExist:
+            return Response({'error': 'Supplier Order not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.method == 'GET':
+            serializer = SupplierOrderSerializer(supplier_order)
+            return Response(serializer.data)
+
+        elif request.method == 'PUT':
+            serializer = SupplierOrderSerializer(supplier_order, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        elif request.method == 'DELETE':
+            supplier_order.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)

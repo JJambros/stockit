@@ -12,6 +12,18 @@ urlpatterns = [
     # Profile URL (viewing/updating the logged-in user's profile)
     path('profile/', views.profile_detail, name='profile-detail'),
 
+    #notifications views
+    path('notifications/', views.notification_list, name='notifications-list'),
+    path('notifications/<int:pk>/', views.notification_detail, name='notifications-detail'),
+    
+    #Supplierorder views
+    path('supplierorder/', views.supplier_order_list, name='supplierorder-list'),
+    path('supplierorder/<int:pk>/', views.supplier_order_detail, name='supplierorder-detail'),
+    
+    #reorder views
+    path('reorder/', views.reorder_threshold_list, name='reorder-list'),
+    path('reorder/<int:pk>/', views.reorder_threshold_detail, name='reorder-detail'),
+    
     # Register User URL
     path('register/', views.register_user, name='register'),
 
@@ -82,6 +94,8 @@ urlpatterns = [
     # Supplier URLs
     path('suppliers/', views.supplier_list, name='supplier-list'),
     path('suppliers/<int:pk>/', views.supplier_detail, name='supplier-detail'),
+    
+    
 
     # Purchase Order URLs
     path('purchase-orders/', views.purchase_order_list, name='purchase-order-list'),
