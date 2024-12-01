@@ -368,3 +368,29 @@ class WorksOn(models.Model):
     
     class Meta:
         unique_together = (('user', 'inventory', 'order'),)  # Ensures unique combination of these fields
+
+# Notification model to hold information for notifications
+class Notifications(models.Model):
+    notification_id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Link to User
+    message = models.TextField()
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
+
+
+    def __str__(self):
+        return f'Notification {self.notification_id} for {self.user}'
+
+   # ReorderThreshold model to hold information on the threshold for a reorder
+class ReorderThreshold(models.Model):
+    threshold_id = models.AutoField(primary_key=True)
+    reorder_point = models.IntegerField()
+    reorder_quantity = models.IntegerField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1)  # Link to User
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, default=1)  # New field for Supplier
+    inventory = models.ForeignKey(Inventory, on_delete=models.CASCADE)  # Link to Inventory
+    is_deleted = models.BooleanField(default=False)  # New field for soft deletion
+
+
+    def __str__(self):
+        return f'Reorder Threshold {self.threshold_id} for {self.inventory}'
+

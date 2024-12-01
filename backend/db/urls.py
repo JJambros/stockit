@@ -86,4 +86,16 @@ urlpatterns = [
     # Purchase Order URLs
     path('purchase-orders/', views.purchase_order_list, name='purchase-order-list'),
     path('purchase-orders/<int:pk>/', views.purchase_order_detail, name='purchase-order-detail'),
+
+    # notifications URKs
+    path('notifications/', views.notification_list, name='notifications-list'),
+    path('notifications/<int:pk>/', views.notification_detail, name='notifications-detail'),
+
+    # Supplierorder URLs
+    path('supplierorder/', views.supplier_order_list, name='supplierorder-list'),
+    path('supplierorder/<int:pk>/', views.supplier_order_detail, name='supplierorder-detail'),
+
+    #reorder URLs
+    path('reorder/', views.reorder_threshold_list, name='reorder-list'),
+    path('reorder/<int:pk>/', views.reorder_threshold_detail, name='reorder-detail'),
 ]
