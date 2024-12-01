@@ -28,8 +28,7 @@ class InventorySerializer(serializers.ModelSerializer):
         fields = ['inventory_id', 'name', 'cost', 'price', 'quantity', 'forecast_level', 'category', 'category_name', 'is_deleted']
         extra_kwargs = {
             'is_deleted': {'read_only': True},  # Prevent direct modification of `is_deleted`
-            'category': {'write_only': True},  # Allow setting `category` by ID in requests
-        }
+            }
 
 # Customer Serializer
 class CustomerSerializer(serializers.ModelSerializer):
