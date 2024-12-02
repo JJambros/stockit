@@ -15,7 +15,7 @@ class Profile(models.Model):
     Minit = models.CharField(max_length=1, null=True, blank=True)
     Lname = models.CharField(max_length=15)
     email = models.EmailField(max_length=50, unique=True)  # Unique
-    phone_number = models.CharField(max_length=20, unique=True)  # Unique
+    phone_number = models.CharField(max_length=20, unique=False)  # Unique
     is_deleted = models.BooleanField(default=False)  # Field for soft deletion
 
     def delete(self, using=None, keep_parents=False):

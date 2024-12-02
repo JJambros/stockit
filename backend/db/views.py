@@ -20,7 +20,7 @@ from .models import Profile, Inventory, Dashboard, InventoryHistory, AuditTrail,
     Shipment, PurchaseOrder, ForecastingPreferences, Supplier, Category, Location, OrderStatus, SupplierOrder, ReorderThreshold, Notifications
 from .serializers import ProfileSerializer, InventorySerializer, DashboardSerializer, AuditTrailSerializer, \
     OrderItemSerializer, ShipmentSerializer, PurchaseOrderSerializer, ForecastingPreferencesSerializer, \
-    SupplierSerializer, CustomerOrderSerializer, CustomerSerializer, CategorySerializer, LocationSerializer, OrderStatusSerializer,
+    SupplierSerializer, CustomerOrderSerializer, CustomerSerializer, CategorySerializer, LocationSerializer, OrderStatusSerializer, \
     SupplierSerializer, CustomerOrderSerializer, CustomerSerializer, CategorySerializer, LocationSerializer, OrderStatusSerializer, \
     ReorderThresholdSerializer, SupplierOrderSerializer, NotificationsSerializer
 from decimal import Decimal  # Added because math is dumb (decimals and floats can't multiply)

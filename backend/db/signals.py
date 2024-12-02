@@ -95,21 +95,18 @@ def auto_generate_order(sender, instance, **kwargs):
                 )
         # Check if the inventory quantity is below the reorder point to trigger auto-order
         if instance.quantity < threshold.reorder_point:
-            SupplierOrder.objects.create(
-                supplier=threshold.supplier,  # Adjust if needed to get the relevant supplier
-                product=instance,
-                quantity=threshold.reorder_quantity  # Quantity to reorder from the threshold
+            # Create a PurchaseOrder instead of SupplierOrder
+            PurchaseOrder.objects.create(
+                supplier=threshold.supplier,
+                inventory=instance,
+                order_quantity=threshold.reorder_quantity,  # Quantity to reorder
+                po_date=timezone.now().date()
             )
             # Notify the user about the auto-order creation
             if user and user.is_authenticated:
                 Notifications.objects.create(
                     user=user,
-                    message=f"Automatic order created for '{instance.name}' due to low inventory."
-                )
-                # Create a notification in the database
-                Notifications.objects.create(
-                    user=user,
-                    message=f"Automatic order created for '{instance.name}' as it reached the reorder threshold."
+                    message=f"Automatic Purchase Order created for '{instance.name}' due to low inventory."
                 )
     except ReorderThreshold.DoesNotExist:
         # Log or handle the case where no reorder threshold is set for this inventory item
