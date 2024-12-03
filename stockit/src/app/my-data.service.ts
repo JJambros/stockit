@@ -21,6 +21,9 @@ export class MyDataService {
   private categoriesUrl = 'http://localhost:8000/api/categories/';
   private dashboardBreakdown = 'http://localhost:8000/api/dashboard/total-breakdown/';
   private inventoryForecast = 'http://localhost:8000/api/inventory/forecast';
+  private userregisterURL = 'http://localhost:8000/api/register'; 
+  private notificationURL = 'http://localhost:8000/api/notifications';
+  private reorderThresholdURL = 'http://localhost:8000/api/reorder';
   //
   constructor(private http: HttpClient) { }
 
@@ -58,21 +61,58 @@ export class MyDataService {
       return this.http.get(this.inventoryUrl);
     }
 
+    // getUser(): Observable<any>{
+    //   return this.http.get(this.userregisterURL);
+    // }
+
+    getNotifications(): Observable<any>{
+      return this.http.get(this.notificationURL);
+    }
+
+    softDeleteNotifications(notificationId: number):Observable<any>{
+      return this.http.delete(`${this.notificationURL}/${notificationId}/`)
+    }
+
+    // softDeleteAllNotifications(): Observable<any>{
+    //   return this.http.delete(`${this.notificationURL}/`)
+    // }
+
     updateInventoryItem(item:any): Observable<any>{
-      return this.http.put(`${this.inventoryUrl}${item.inventory_id}/`, item);
+      return this.http.patch(`${this.inventoryUrl}${item.inventory_id}/`, item);
     }
 
     getCategories():Observable<any>{
       return this.http.get(this.categoriesUrl);
     }
 
-    // addCategories(item:any): Observable<any>{
-    //   return this.http.post(this.categoriesUrl, item);
-    // }
+    addCategories(item:any): Observable<any>{
+      return this.http.post(this.categoriesUrl, item);
+    }
 
 
     addInventoryItem(item:any): Observable<any>{
       return this.http.post(this.inventoryUrl, item);
+    }
+    
+    getreorderT(item:any): Observable<any>{
+      return this.http.get(this.reorderThresholdURL);
+    }
+
+    updatereorderT(item:any) :Observable<any>{
+      return this.http.post(`${this.reorderThresholdURL}/`,{
+        threshold_id: item.threshold_id,
+        inventory_id: item.inventory_id,
+        reorder_point: item.reorder_point,
+        reorder_quantity: item.reorder_quantity
+      });
+    }
+    
+    addreorderT(item:any):Observable<any>{
+      return this.http.post(this.reorderThresholdURL,item);
+    }
+
+    addUsers(item:any): Observable<any>{
+      return this.http.post(this.userregisterURL,item);
     }
 
     softDeleteItems(itemId: number): Observable<any>{

@@ -1,15 +1,15 @@
 
 
 <div class="rf-register-form" style="margin-left: 80px;margin-right: 80px;margin-top: 60px;">
-    <form class="rg-form">
+    <form (ngSubmit)="addUser()" class="rg-form">
         <h2>Register new employee</h2>
         <div class="rf-input-container"><i class="fa fa-star fa fa-envelope rf-icon">Username</i>
-            <input class="form-control rf-input-field" type="text" placeholder="Username">
+            <input type="text" class="form-control rf-input-field" id="itemUsername" [(ngModel)]="newUser.username"  required>
         </div>
         <div class="rf-input-container"><i class="fa fa-star fa fa-key rf-icon">Password</i>
-            <input class="form-control rf-input-field" type="password" placeholder="Password">
-        </div>
-        
+            <input type="password" class="form-control rf-input-field" id="itemPassword" [(ngModel)]="newUser.password"  required>
+        </div>    
         <button class="btn btn-primary rf-btn" type="button">Add Employee</button>
     </form>
 </div>
+
