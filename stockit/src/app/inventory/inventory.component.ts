@@ -26,8 +26,10 @@ interface PieChartData {
 export class InventoryComponent implements OnInit  {
  inventoryList: any[] =[];
  categories: any[] =[];
+ notifications: any[]=[];
+ shownotifications=false;
  showInvenoryForm: boolean = false; //default doesn't display form
-//  showCategoryForm: boolean = false;
+ showCategoryForm: boolean = false;
  showModal: boolean = false;  // Flag to show/hide modal
  selectedItem: any = {};  // Holds the selected inventory item
 
@@ -41,10 +43,10 @@ export class InventoryComponent implements OnInit  {
   category: '',
  };
 
-//  newCategory={
-//   name:'',
-//   description:'',
-//  };
+ newCategory={
+  name:'',
+  description:'',
+ };
 
  // Pie chart options
  single: any[] = [];
@@ -66,6 +68,7 @@ export class InventoryComponent implements OnInit  {
  ngOnInit(): void {
   this.apiInventory();
   this.apiCategories();
+  this.apinotifications();
  }
 
  apiInventory(): void{
@@ -79,7 +82,56 @@ export class InventoryComponent implements OnInit  {
     (error) => console.error('error fetching INVENTORY data', error)
    );
  }
+ apinotifications():void{
+  this.myDataService.getNotifications().subscribe((data)=>{
+   // console.log('got inventory data', data);
+    this.notifications= Array.isArray(data) ? data : [];
+  },
+  (error) => console.error('error fetching notifications data', error)
+);
+ }
+ displayNotifications():void{
+  this.shownotifications = !this.shownotifications;
+ }
 
+//  clearAllNotifications():void{
+//   this.myDataService.softDeleteAllNotifications().subscribe(
+//     ()=>{
+//       this.notifications=[];
+//       this.shownotifications = false;
+//     },
+//     (error) => console.error('error soft deleting all', error)
+//   );
+//  }
+
+
+ clearNotifications(notificationId:number):void{
+  this.myDataService.softDeleteNotifications(notificationId).subscribe(()=>{
+    this.notifications = this.notifications.filter((notify)=>notify.notification_id !== notificationId);
+  },
+(error)=>{
+  console.error('error soft deleting one notification', error);
+});
+ }
+ openreorderModal(item:any):void{
+  this.selectedItem = {...item };
+  this.showModal = true;
+ }
+
+ closeReorder():void{
+  this.showModal = false;
+  this.selectedItem = {};
+ }
+ 
+ updateReorderThreshold(item:any):void{
+  this.myDataService.updatereorderT(item).subscribe(
+    () =>{
+      this.closeReorder();
+      this.apiInventory();
+    },
+    (error) =>console.error('error updating threshold',error)
+  );
+ }
  // Pie chart methods
  transformDataForChart(): void {
   // Transform the inventory data into the format required by the pie chart
@@ -133,16 +185,16 @@ addInventory(): void{
   });
 }
 
-// addCategory(): void{
-//   console.log('new category: ', this.newCategory);
-//   this.myDataService.addCategories(this.newCategory).subscribe(()=>{
-//     this.apiInventory();
-//     this.showCategoryForm = false;
-//     alert('category created sucessfully');
-//   },(error)=>{
-//     console.error('error adding new category',error);
-//   });
-// }
+addCategory(): void{
+  console.log('new category: ', this.newCategory);
+  this.myDataService.addCategories(this.newCategory).subscribe(()=>{
+    this.apiInventory();
+    this.showCategoryForm = false;
+    alert('category created sucessfully');
+  },(error)=>{
+    console.error('error adding new category',error);
+  });
+}
 
  updateItemQuantity(item: any){
   this.myDataService.updateInventoryItem(item).subscribe(
