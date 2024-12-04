@@ -33,23 +33,6 @@
             
         </div>
     </div>
-    <div *ngIf="showModal" class="modal">
-        <div class="modal-content">
-            <span class="close"(click)="closeReorder()">??</span>
-            <form (ngSubmit)="updateReorderThreshold(selectedItem)">
-                <div class="form-group">
-                    <label for="reorderPoint">Reorder Point</label>
-                    <input type="number" class="form-control" id="reorderPoint" [(ngModel)]="selectedItem.reorder_point" name="reorderPoint" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="reorderquantity">Reorder Quantity</label>
-                    <input type="number" class="form-control" id="reorderquantity" [(ngModel)]="selectedItem.reorder_quantity" name="reorderquantity" required>
-                </div>
-                <button type="submit">Save</button>
-            </form>
-        </div>
-    </div>
     <div class="col">
         <ngx-charts-pie-chart
   [view]="[700, 400]"
@@ -70,11 +53,12 @@
         </div>
         
         <div class="col-12 col-sm-6 col-md-6 text-end" >
-            <a class="btn btn-primary" role="button" (click)="showInvenoryForm = !showInvenoryForm"><i class="fa fa-plus"></i>&nbsp;Add Inventory</a>
+            <a class="btn btn-primary" role="button" (click)="showInvenoryForm = !showInvenoryForm">&nbsp;Add Inventory</a>
             <a class="btn btn-primary" role="button" (click)="showCategoryForm = !showCategoryForm">&nbsp;Add Category</a>
+            <a class="btn btn-primary" role="button" (click)="showReorder = !showReorder">Update Reorder</a>
         </div>
         
-
+<!-- category form -->
         <div class="rf-register-form" style="margin-left: 80px;margin-right: 80px;margin-top: 60px;" *ngIf="showCategoryForm">
             <form (ngSubmit)="addCategory()" class="rg-form">
                 <h2>Create new category for new products</h2>
@@ -88,6 +72,7 @@
                 <button class="btn btn-primary rf-btn" type="button">Add</button>
             </form>
         </div>
+        <!-- inventory form -->
         <div style="margin: 50px; padding: 50PX;max-width: 800px;" *ngIf="showInvenoryForm" class="card">
             <form (ngSubmit)="addInventory()">
                 <div class="form-row">
@@ -126,6 +111,37 @@
               </form>
         </div>
     </div>
+     <!-- reorder form -->
+     <div style="margin: 50px; padding: 50PX;max-width: 800px;" *ngIf="showReorder" >
+        <div>
+            <form (ngSubmit)="updateReorderThreshold(selectedItem)">
+                <div class="form-group">
+                    <label for="reorderPoint">Reorder Point</label>
+                    <input type="number" class="form-control" id="reorderPoint" [(ngModel)]="selectedItem.reorder_point" name="reorderPoint" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="reorderquantity">Reorder Quantity</label>
+                    <input type="number" class="form-control" id="reorderquantity" [(ngModel)]="selectedItem.reorder_quantity" name="reorderquantity" required min="0">
+                </div>
+                <div class="form-group col-md-6">
+                    <label for="itemre">Inventory</label>
+                    <select class="form-control" name="reorder" id="itemre" [(ngModel)]="selectedItem.inventory" name="reorder" required min="0">
+                        <option *ngFor="let item of reorderList" [value]="item.threshold_id">
+                            <span *ngFor="let inventory of inventoryList">
+                                <ng-container *ngIf="inventory.inventory_id === item.inventory">
+                                    {{ inventory.name }}
+                                </ng-container>
+                            </span>
+                        </option>
+                    </select>
+                  </div>
+                <button type="submit">Save</button>
+                <button type="button"(click)="closeReorder()">Cancel</button>
+            </form>
+        </div>
+    </div>
+    <!-- inventory table -->
     <div class="card" id="TableSorterCard">
         <div class="card-header py-3">
             <div class="row table-topper align-items-center">
@@ -167,10 +183,6 @@
                                    
                                         <button class="btn btnMaterial btn-flat accent btnNoBorders checkboxHover" (click)="softDelete(item.inventory_id)">
                                             <i class="fas fa-trash btnNoBorders" style="color: #DC3545;"></i>
-                                        </button>
-
-                                        <button class="btn btnMaterial btn-flat" (click)="openreorderModal(item)">
-                                            update Reorder
                                         </button>
                                    
                                 </td>

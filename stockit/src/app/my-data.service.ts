@@ -24,6 +24,7 @@ export class MyDataService {
   private userregisterURL = 'http://localhost:8000/api/register'; 
   private notificationURL = 'http://localhost:8000/api/notifications';
   private reorderThresholdURL = 'http://localhost:8000/api/reorder';
+  private returnedValues: any;
   //
   constructor(private http: HttpClient) { }
 
@@ -73,10 +74,6 @@ export class MyDataService {
       return this.http.delete(`${this.notificationURL}/${notificationId}/`)
     }
 
-    // softDeleteAllNotifications(): Observable<any>{
-    //   return this.http.delete(`${this.notificationURL}/`)
-    // }
-
     updateInventoryItem(item:any): Observable<any>{
       return this.http.put(`${this.inventoryUrl}${item.inventory_id}/`, item);
     }
@@ -94,16 +91,20 @@ export class MyDataService {
       return this.http.post(this.inventoryUrl, item);
     }
     
-    getreorderT(item:any): Observable<any>{
+    getreorderT(): Observable<any>{
       return this.http.get(this.reorderThresholdURL);
     }
 
     updatereorderT(item:any) :Observable<any>{
-      return this.http.post(`${this.reorderThresholdURL}/`,{
-        threshold_id: item.threshold_id,
-        inventory_id: item.inventory_id,
+      this.http.get(`${this.reorderThresholdURL}/${item.inventory}/`).subscribe((response: any) => {
+        this.returnedValues = response;
+      });
+      return this.http.put(`${this.reorderThresholdURL}/${item.inventory}/`,{
         reorder_point: item.reorder_point,
-        reorder_quantity: item.reorder_quantity
+        reorder_quantity: item.reorder_quantity,
+        inventory: this.returnedValues.inventory,
+        user: this.returnedValues.user,
+        supplier: this.returnedValues.supplier
       });
     }
     

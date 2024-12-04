@@ -25,11 +25,13 @@ interface PieChartData {
 })
 export class InventoryComponent implements OnInit  {
  inventoryList: any[] =[];
+ reorderList: any[] =[];
  categories: any[] =[];
  notifications: any[]=[];
  shownotifications=false;
  showInvenoryForm: boolean = false; //default doesn't display form
  showCategoryForm: boolean = false;
+ showReorder:boolean=false; //for reorder threshold
  showModal: boolean = false;  // Flag to show/hide modal
  selectedItem: any = {};  // Holds the selected inventory item
 
@@ -69,6 +71,7 @@ export class InventoryComponent implements OnInit  {
   this.apiInventory();
   this.apiCategories();
   this.apinotifications();
+  this.apiReorders();
  }
 
  apiInventory(): void{
@@ -82,56 +85,76 @@ export class InventoryComponent implements OnInit  {
     (error) => console.error('error fetching INVENTORY data', error)
    );
  }
+
+ apiReorders(): void{
+  this.myDataService.getreorderT().subscribe(
+    (data) => {
+      //console to see items.______
+      // console.log('got inventory data', data);
+      this.reorderList = Array.isArray(data) ? data : [];
+    },
+    (error) => console.error('error fetching REORDER data', error)
+   );
+ }
+
  apinotifications():void{
   this.myDataService.getNotifications().subscribe((data)=>{
-   // console.log('got inventory data', data);
+    //console.log('got data', data);
     this.notifications= Array.isArray(data) ? data : [];
   },
   (error) => console.error('error fetching notifications data', error)
 );
  }
+
+ apiCategories():void{
+  this.myDataService.getCategories().subscribe((data)=>{
+    this.categories=Array.isArray(data) ? data :[];
+  },(error)=>{
+    console.error('error categories data',error);
+  });
+}
+
  displayNotifications():void{
   this.shownotifications = !this.shownotifications;
  }
 
-//  clearAllNotifications():void{
-//   this.myDataService.softDeleteAllNotifications().subscribe(
-//     ()=>{
-//       this.notifications=[];
-//       this.shownotifications = false;
-//     },
-//     (error) => console.error('error soft deleting all', error)
-//   );
-//  }
-
-
  clearNotifications(notificationId:number):void{
   this.myDataService.softDeleteNotifications(notificationId).subscribe(()=>{
     this.notifications = this.notifications.filter((notify)=>notify.notification_id !== notificationId);
-  },
-(error)=>{
-  console.error('error soft deleting one notification', error);
-});
- }
+  }, (error)=>{ console.error('error soft deleting one notification', error);
+  });
+}
+
  openreorderModal(item:any):void{
   this.selectedItem = {...item };
-  this.showModal = true;
+  this.showReorder = true;
  }
 
  closeReorder():void{
-  this.showModal = false;
+  this.showReorder = false;
   this.selectedItem = {};
  }
  
  updateReorderThreshold(item:any):void{
   this.myDataService.updatereorderT(item).subscribe(
     () =>{
+
       this.closeReorder();
       this.apiInventory();
     },
     (error) =>console.error('error updating threshold',error)
   );
  }
+ // Modal methods
+editAlert(item: any): void {
+  this.selectedItem = { ...item };  // Make a copy of the item to avoid mutating the original
+  this.showModal = true;  // Show the modal
+}
+
+closeModal(): void {
+  this.showModal = false;
+}
+
  // Pie chart methods
  transformDataForChart(): void {
   // Transform the inventory data into the format required by the pie chart
@@ -153,26 +176,6 @@ onDeactivate(data: PieChartData): void {
   console.log('Deactivate', JSON.parse(JSON.stringify(data)));
 }
 
-// Modal methods
-editAlert(item: any): void {
-  this.selectedItem = { ...item };  // Make a copy of the item to avoid mutating the original
-  this.showModal = true;  // Show the modal
-}
-
-closeModal(): void {
-  this.showModal = false;
-}
-
-
-
-
-apiCategories():void{
-  this.myDataService.getCategories().subscribe((data)=>{
-    this.categories=Array.isArray(data) ? data :[];
-  },(error)=>{
-    console.error('error categories data',error);
-  });
-}
 //add form
 addInventory(): void{
   console.log('new:', this.newItem);
@@ -218,4 +221,6 @@ addCategory(): void{
     );
   }
  }
+
+
 }
