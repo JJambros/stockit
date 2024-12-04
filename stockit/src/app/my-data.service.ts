@@ -78,7 +78,7 @@ export class MyDataService {
     // }
 
     updateInventoryItem(item:any): Observable<any>{
-      return this.http.patch(`${this.inventoryUrl}${item.inventory_id}/`, item);
+      return this.http.put(`${this.inventoryUrl}${item.inventory_id}/`, item);
     }
 
     getCategories():Observable<any>{
