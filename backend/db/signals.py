@@ -5,10 +5,10 @@ from django.conf import settings
 from crum import get_current_user  # Import from crum to get the current user context
 from django.utils import timezone # For Tracking Shipping
 from datetime import timedelta # For Tracking Shipping
-from threading import Timer # For Tracking Shipping
+from rest_framework.authtoken.models import Token
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
-from .models import AuditTrail, SupplierOrder, OrderItem, PurchaseOrder, Inventory, ReorderThreshold, InventoryHistory, Profile, Shipment
+from .models import AuditTrail, SupplierOrder, OrderItem, PurchaseOrder, Inventory, ReorderThreshold, Notifications, InventoryHistory, Profile, Shipment
 
 
 # --------- SIGNAL FOR AUDIT TRAIL --------- #
@@ -84,13 +84,30 @@ def auto_generate_order(sender, instance, **kwargs):
         # Retrieve the reorder threshold for this inventory item
         threshold = ReorderThreshold.objects.get(inventory=instance)
 
-        # Check if the inventory quantity is below the reorder point
+        # Check if the inventory quantity is approaching the reorder point
+        if instance.quantity <= threshold.reorder_point * 1.2:  # e.g., 20% above reorder point
+            user = get_current_user()
+
+            if user and user.is_authenticated:
+                Notifications.objects.create(
+                    user=user,
+                    message=f"Inventory for '{instance.name}' is approaching the reorder point."
+                )
+        # Check if the inventory quantity is below the reorder point to trigger auto-order
         if instance.quantity < threshold.reorder_point:
-            SupplierOrder.objects.create(
-                supplier=threshold.supplier,  # Adjust if needed to get the relevant supplier
-                product=instance,
-                quantity=threshold.reorder_quantity  # Quantity to reorder from the threshold
+            # Create a PurchaseOrder instead of SupplierOrder
+            PurchaseOrder.objects.create(
+                supplier=threshold.supplier,
+                inventory=instance,
+                order_quantity=threshold.reorder_quantity,  # Quantity to reorder
+                po_date=timezone.now().date()
             )
+            # Notify the user about the auto-order creation
+            if user and user.is_authenticated:
+                Notifications.objects.create(
+                    user=user,
+                    message=f"Automatic Purchase Order created for '{instance.name}' due to low inventory."
+                )
     except ReorderThreshold.DoesNotExist:
         # Log or handle the case where no reorder threshold is set for this inventory item
         print(f"No reorder threshold set for Inventory item: {instance.name}")
@@ -141,6 +158,10 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
             email=instance.email if instance.email else f"{instance.username}@example.com", # Fill in just for a profile creation, can be changed manually
             phone_number="0000000000" # Fill in just for a profile creation, can be changed manually
         )
+
+        # Generate a token for the user
+        Token.objects.create(user=instance)
+
     else:
         # Update the profile if the user is updated
         Profile.objects.filter(user=instance).update(
