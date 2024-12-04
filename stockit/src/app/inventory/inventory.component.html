@@ -127,8 +127,13 @@
                 <div class="form-group col-md-6">
                     <label for="itemre">Inventory</label>
                     <select class="form-control" name="reorder" id="itemre" [(ngModel)]="selectedItem.inventory" name="reorder" required min="0">
-                        <option *ngFor="let item of inventoryList" [value]="item.inventory_id">
-                             {{item.inventory_id}}</option>
+                        <option *ngFor="let item of reorderList" [value]="item.threshold_id">
+                            <span *ngFor="let inventory of inventoryList">
+                                <ng-container *ngIf="inventory.inventory_id === item.inventory">
+                                    {{ inventory.name }}
+                                </ng-container>
+                            </span>
+                        </option>
                     </select>
                   </div>
                 <button type="submit">Save</button>

@@ -25,6 +25,7 @@ interface PieChartData {
 })
 export class InventoryComponent implements OnInit  {
  inventoryList: any[] =[];
+ reorderList: any[] =[];
  categories: any[] =[];
  notifications: any[]=[];
  shownotifications=false;
@@ -70,6 +71,7 @@ export class InventoryComponent implements OnInit  {
   this.apiInventory();
   this.apiCategories();
   this.apinotifications();
+  this.apiReorders();
  }
 
  apiInventory(): void{
@@ -81,6 +83,17 @@ export class InventoryComponent implements OnInit  {
       this.transformDataForChart();
     },
     (error) => console.error('error fetching INVENTORY data', error)
+   );
+ }
+
+ apiReorders(): void{
+  this.myDataService.getreorderT().subscribe(
+    (data) => {
+      //console to see items.______
+      // console.log('got inventory data', data);
+      this.reorderList = Array.isArray(data) ? data : [];
+    },
+    (error) => console.error('error fetching REORDER data', error)
    );
  }
 
@@ -208,4 +221,6 @@ addCategory(): void{
     );
   }
  }
+
+
 }
