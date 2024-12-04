@@ -73,10 +73,6 @@ export class MyDataService {
       return this.http.delete(`${this.notificationURL}/${notificationId}/`)
     }
 
-    // softDeleteAllNotifications(): Observable<any>{
-    //   return this.http.delete(`${this.notificationURL}/`)
-    // }
-
     updateInventoryItem(item:any): Observable<any>{
       return this.http.patch(`${this.inventoryUrl}${item.inventory_id}/`, item);
     }
@@ -101,7 +97,7 @@ export class MyDataService {
     updatereorderT(item:any) :Observable<any>{
       return this.http.post(`${this.reorderThresholdURL}/`,{
         threshold_id: item.threshold_id,
-        inventory_id: item.inventory_id,
+        inventory: item.inventory.inventory_id,
         reorder_point: item.reorder_point,
         reorder_quantity: item.reorder_quantity
       });
