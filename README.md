@@ -1,6 +1,6 @@
 # StockIt
 Create a new folder called ‘stockit’ in whatever location you’d like. This is your root folder. Open git bash inside this folder and enter:
-```git clone https://github.com/SPriyanka0/CSC_490_CAPSTONE.git```
+```git clone https://github.com/JJambros/stockit.git```
 
 Enter your terminal and cd to this root folder/stockit i.e c:/users/afolder/stockit/stockit/
 This location is the Angular frontend.
@@ -38,6 +38,7 @@ In terminal:
 python -m pip install Django
 pip install djangorestframework
 pip install django-cors-headers
+pip install django-crum
 ```
 
 
@@ -72,6 +73,21 @@ python manage.py createsuperuser
 ```
 Creating a super user prompts you for a username, email and password. This is creating your django admin credentials.
 
+## List of various libraries / modules to install
+Add to this list as functionality is added
+```
+npm install bootstrap
+npm install jquery --save
+npm install popper.js --save
+npm install @swimlane/ngx-charts --save
+npm install datatables.net --save
+npm install datatables.net-dt --save
+npm install angular-datatables --save
+npm install @types/jquery --save-dev
+```
+
+
+
 ## THAT’S IT FOR SETUP
 
 ## To Start the Web Server
@@ -101,6 +117,3 @@ This updates the schema but doesn’t affect any actual data in the databases.
 
 -Dumpdata and loaddata can be used to share database contents.
 
--For development, frontend and backend each have their own server that communicates. On deployment, this will change. 
-
-(note to self: dont run with secret key and debug on in production, move to env)
